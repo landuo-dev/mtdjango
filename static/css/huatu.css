@@ -1,0 +1,314 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+ul, ol {
+    list-style: none;
+    padding: 0; /* 可能还需要去除默认的左边距 */
+    margin: 0; /* 可能还需要去除默认的上下边距 */
+}
+
+/* 去除链接的下划线 */
+a {
+    text-decoration: none;
+}
+
+.fanhui {
+    position: absolute;
+    left: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* 让容器占满整个视口高度 */
+}
+
+/* 导航栏样式 */
+.container nav {
+    background-color: #f1f1f1;
+    color: coral;
+    padding: 20px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+
+    transition: all 0.3s ease;
+    position: relative;
+    /* 添加这行代码使文字内容居中 */
+    text-align: center;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 返回按钮与主要功能区之间的空间分布 */
+    background-color: #f1f1f1;
+    padding: 10px 20px 15px 20px;;
+    margin-bottom: 10px;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 返回按钮样式 */
+.return-button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #6c757d;
+    color: white;
+    cursor: pointer;
+}
+
+/* 主要功能区样式 */
+.main-functions {
+    margin-left: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* 内容居中对齐 */
+    flex: 1; /* 占据剩余空间 */
+}
+
+/* 时间范围选择样式 */
+.time-selector {
+    display: flex;
+    margin-right: 10px;
+}
+
+.time-option {
+    margin-right: 5px;
+    padding: 5px 10px;
+    background-color: transparent;
+    cursor: pointer;
+    border: 1px solid gray;
+}
+
+/* 输入框样式 */
+.search-input {
+    margin-right: 10px;
+    padding: 5px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+/* 提交与更多按钮容器 */
+.submit-more-container {
+    display: flex;
+    align-items: center;
+}
+
+/* 提交按钮样式 */
+.submit-button {
+
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+/* 更多按钮样式 */
+.more-button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #adb5bd;
+    color: white;
+    cursor: pointer;
+    margin-left: 200px; /* 控制与提交按钮的间距 */
+}
+
+/*    导航栏样式结束*/
+
+.log-container {
+    text-align: center;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#log-title {
+    margin-bottom: 20px;
+}
+
+#log-input {
+    width: 100%;
+    height: 200px;
+    margin-bottom: 20px;
+    resize: vertical;
+}
+
+#submit-log {
+    width: 100px;
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#cancel {
+    width: 100px;
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.check {
+    background: #111111;
+    color: #ffffff;
+}
+
+#log-modal {
+    position: fixed;
+    top: 8%;
+    left: 30%;
+    width: 40%;
+    /*height: 400px;*/
+    display: none;
+    overflow: auto;
+    z-index: 1000;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    /*display: block;*/
+    height: 400px;
+    width: 100%;
+    position: relative;
+    margin: 15% auto;
+    max-width: 80%;
+    min-width: 300px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: white;
+}
+
+.newDiv {
+    position: absolute;
+    bottom: 5px;
+    left: 45%;
+    background-color: rgba(255, 255, 255, 0.8); /* 背景颜色，半透明 */
+    padding: 10px; /* 内边距 */
+    border-radius: 5px; /* 圆角 */
+    z-index: 800; /* 确保元素覆盖在图表之上 */
+    font-size: 12px;
+}
+
+.item {
+    position: relative; /* 必须要有相对定位 */
+    /*padding: 10px 20px 30px 20px;*/
+}
+
+.rz {
+    background: sandybrown;
+    cursor: pointer;
+    line-height: 22px;
+}
+
+.rz:active {
+    background: rgb(255, 255, 255);
+}
+
+
+/* 初始时隐藏下拉列表 */
+#mySelect {
+    display: none;
+    position: absolute; /* 绝对定位，避免影响页面流 */
+    z-index: 50; /* 确保下拉列表在其他元素之上 */
+    background-color: white; /* 保持下拉列表背景清晰可见 */
+    border: 1px solid #ccc; /* 可选，增加边框使下拉列表更清晰 */
+    top: 110px;
+    left: 40%;
+    height: 88px;
+}
+
+/* 当输入框获得焦点时显示下拉列表 */
+#poi_id:focus + #mySelect {
+    display: block;
+}
+
+/* 输入框样式 */
+#poi_id {
+    width: 200px; /* 根据需要调整宽度 */
+    margin-right: 10px; /* 为按钮留出空间 */
+}
+
+/* 按钮样式 */
+#defaultButton {
+    padding: 5px 10px; /* 自定义按钮大小 */
+    background-color: #4CAF50; /* 按钮背景色 */
+    color: white; /* 文字颜色 */
+    border: none; /* 移除边框 */
+    cursor: pointer; /* 鼠标悬停时显示手型 */
+}
+
+
+/*主容器样式*/
+.main {
+    width: 100%;
+    height: 100%; /* 为使align-items生效，需设定容器高度，这里假设是占满父容器高度 */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 三列等宽布局 */
+    grid-gap: 10px; /* 间距 */
+    align-items: start; /* 顶部对齐 */
+    flex-grow: 1; /* 允许主容器随内容增长 */
+    overflow-y: auto; /* 如果内容超出，出现滚动条 */
+
+}
+
+/*.main {*/
+/*    display: grid;*/
+/*    grid-template-columns: repeat(1, 1fr); !* 应该是 repeat(3, 1fr)，表示三列等宽布局 *!*/
+/*    grid-gap: 10px; !* 间距 *!*/
+/*    justify-items: center; !* 水平居中对齐 *!*/
+/*    align-items: center; !* 垂直居中对齐，与顶部对齐改为居中对齐 *!*/
+
+/* 为使align-items生效，需设定容器高度，这里假设是占满父容器高度 */
+/*    flex-grow: 1; !* 允许主容器随内容增长 *!*/
+/*    overflow-y: auto; !* 如果内容超出，出现滚动条 *!*/
+/*}*/
+
+
+.item {
+    background-color: #f1f1f1;
+    padding: 20px;
+    border: 1px solid #ddd;
+    text-align: center;
+    cursor: pointer;
+    height: 35vh;
+    /* 可以根据需要调整样式 */
+}
+
+.nav-s1 {
+    font-size: 20px !important;
+}
+
+.showtime {
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+    color: #858692;
+    margin-right: 30px;
+}
+
+
+
+
+
+

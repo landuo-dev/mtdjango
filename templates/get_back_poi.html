@@ -1,0 +1,162 @@
+{% extends "beas.html" %}
+
+{% block title %}
+    查询定时任务
+{% endblock %}
+
+{% block cssnr %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/updata_jx.css' %}">
+    <link rel="stylesheet" href="{% static 'css/get_ds.css' %}">
+{% endblock %}
+
+
+{% block centent %}
+    <div id="main">
+        <h2>查询备份数据</h2>
+        {% csrf_token %}
+        <div>
+            <label for="poi_id"> 店铺id</label>
+            <input type="text" id="poi_id" value="{{ poi_id }}" onkeyup="filterList()">
+            <label for="mySelect" id>店铺选项</label>
+            <select id="mySelect" size="5">
+                {% for item in arr %}
+                    <option value="{{ item.1 }}" onclick="selectOption(this)">{{ item.0 }}</option>
+                {% endfor %}
+            </select>
+
+        </div>
+
+
+        <div class="button-group">
+            <button class="btn btn-default">提交</button>
+        </div>
+        <div id="cookiediv">
+            <label for="cookie"> 恢复备份需要输入cookie</label>
+            <textarea id="cookie" name="cookie" rows="10" cols="30">{{ cookie }}</textarea>
+        </div>
+        <div id="list_ds">
+            <table class="custom-table">
+                <tr>
+                    <th class="custom-header">POI ID</th>
+                    <th class="custom-header">Date</th>
+                    <th class="custom-header">name</th>
+                    <th class="custom-header">Type</th>
+                    {#                    <th class="custom-header">Edit</th>#}
+                    <th class="custom-header">Operation</th>
+                </tr>
+                {% for doc in documents %}
+                    <tr class="custom-row">
+                        <td class="custom-cell">{{ doc.poi_id }}</td>
+                        <td class="custom-cell">{{ doc.ctime }}</td>
+                        <td class="custom-cell">{{ doc.name }}</td>
+                        <td class="custom-cell">{{ doc.type }}</td>
+                        {#                        <td class="custom-cell"><span class="edit-link" dsid="{{ doc.dsid }}">编辑</span></td>#}
+                        <td class="custom-cell"><span class="delete-link" back_poid="{{ doc.name }}"
+                                                      type_select="{{ doc.type }}">恢复</span></td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+        </div>
+        <div id="error">
+
+        </div>
+        <div id="error1">
+
+        </div>
+
+    </div>
+{% endblock %}
+
+
+{% block jsnr %}
+    <script>
+        function filterList() {
+            var input = $('#poi_id').val().toLowerCase();
+            $('#mySelect option').each(function () {
+                var text = $(this).text().toLowerCase();
+                $(this).toggle(text.indexOf(input) > -1);
+            });
+        }
+
+        function selectOption(selectedOption) {
+            document.getElementById('poi_id').value = selectedOption.value;
+            // document.getElementById('mySelect').style.display = 'none';
+        }
+
+
+        $('.btn-default').click(function () {
+            {#alert('确定更改')#}
+            {#$('#error').html("正在保存，请稍后")#}
+            $("#error1").empty();
+            var poi_id = $('input[id=poi_id]').val();
+
+            var csrf = $('input[name=csrfmiddlewaretoken]').val();
+            var formdata = new FormData();
+
+
+            formdata.append('poi_id', poi_id);
+            formdata.append('cookie', cookie);
+            formdata.append('csrfmiddlewaretoken', csrf);
+            $.ajax({
+                url: "/get_back_poi/{{num}}/{{ aa }}",
+                type: 'post',
+                data: formdata,
+                processData: false, // 不处理数据( 必须有)
+                contentType: false,  //不设置内容类型 ( 必须要)
+                success: function (res) {
+                    if (res['success']) {
+                        {#$('#error').html("保存成功");#}
+                        location.reload();
+                    } else {
+                        {#$('#error').html(res['msg'])#}
+                    }
+
+                }
+            })
+        })
+        $('.edit-link').click(function () {
+            const dsid = $(this).attr('dsid');
+            alert('编辑');
+        })
+
+        $('.delete-link').click(function () {
+            $("#error1").empty();
+            $('#error').html("正在恢复")
+            alert('确认恢复');
+            const back_poid = $(this).attr('back_poid');
+            let type_select = $(this).attr('type_select');
+            const cookie = $('textarea[id=cookie]').val();
+            const csrf = $('input[name=csrfmiddlewaretoken]').val();
+            const poi_id = {{poi_id}};
+            if (type_select === '夹心') {
+                type_select = 0;
+            } else {
+                type_select = 1;
+            }
+
+            $.ajax({
+                url: "/back_Recover/{{ num }}/{{ aa }}",
+                type: 'post',
+                data: {
+                    "poi_id": poi_id,
+                    "back_poid": back_poid,
+                    "csrfmiddlewaretoken": csrf,
+                    "cookie": cookie,
+                    "type_select": type_select,
+                },
+                success: function (res) {
+                    if (res['success']) {
+                        $('#error').html(res['success'])
+                    } else {
+                        $('#error').html(res['msg'])
+                    }
+                }
+
+            })
+        })
+    </script>
+{% endblock %}
+
+

@@ -1,0 +1,194 @@
+ul, ol {
+    list-style: none;
+    padding: 0; /* 可能还需要去除默认的左边距 */
+    margin: 0; /* 可能还需要去除默认的上下边距 */
+}
+
+/* 去除链接的下划线 */
+a {
+    text-decoration: none;
+}
+
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    /*background: #888888;*/
+}
+
+header {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+}
+
+.content-wrapper {
+    display: flex;
+    flex: 1;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+nav ul li {
+    float: left;
+}
+
+nav ul li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+nav ul li a:hover {
+    background-color: #111;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.content-wrapper{
+    width: 100%;
+}
+
+.left_nav{
+    width: 20%;
+    background: #e5e5e5;
+    padding: 10px;
+
+}
+
+.left_nav .item{
+    line-height: 25px;
+    padding: 10px 0;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.left_nav .list-item ul{
+    display: none;
+}
+
+.left_nav .item:hover{
+    background: orange;
+    color: #fefefe;
+    font-size: 25px;
+    line-height: 23px;
+}
+
+.left_nav .list-item li{
+    padding: 10px;
+}
+.list-item li a{
+    display: block;
+    font-size: 20px;
+    color: #111;
+    /*line-height: 20px;*/
+    line-height: 30px;
+}
+.list-item li a:hover {
+    color: orange;
+    font-size: 23px;
+    /*background: #f0f0f0;*/
+    line-height: 30px;
+    /*border: orange solid 2px;*/
+}
+
+
+
+
+main {
+    width: 80%;
+    padding: 10px;
+}
+
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 10px;
+}
+
+
+/* 弹窗样式 */
+#myDialog {
+    display: none; /* 初始状态隐藏 */
+    position: absolute; /* 相对于最近的定位祖先元素定位，通常是main */
+    z-index: 1000; /* 确保弹窗在其他内容之上 */
+    left: 50%; /* 将左边缘定位到main的50% */
+    top: 30%; /* 将上边缘定位到main的50% */
+    transform: translate(-50%, -50%); /* 使用transform将弹窗中心对齐到main的中心 */
+    width: 500px; /* 设置弹窗宽度 */
+    padding: 20px; /* 内边距 */
+    background-color: #fefefe; /* 背景色 */
+    /*border: 1px solid #888; !* 边框 *!*/
+    /*box-shadow: 0 4px 8px rgba(0, 0s, 0, 0.1); !* 阴影效果 *!*/
+    overflow: auto; /* 允许内容滚动 */
+}
+
+#myDialogContent {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.error {
+    color: red; /* 错误信息使用红色字体 */
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+#error1 {
+    color: red; /* 错误信息使用红色字体 */
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.check {
+    color: coral;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+/*.item1 {*/
+/*    color: coral;*/
+/*    padding: 10px 20px;*/
+/*    font-size: 16px;*/
+/*}*/
+
+/*.nav-s1 {*/
+/*    font-size: 20px !important;*/
+/*    color: coral;*/
+/*}*/
+
+

@@ -1,0 +1,159 @@
+{% extends "beas.html" %}
+
+{% block title %}
+    定时修改
+{% endblock %}
+
+{% block cssnr %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/updata_jx.css' %}">
+    <script src="{% static 'js/node_modules/xlsx/xlsx.js' %}"></script>
+{% endblock %}
+
+
+{% block centent %}
+    <div id="main">
+        <h2>定时修改</h2>
+        {% csrf_token %}
+        <div>
+            <label for="poi_id"> 店铺id</label>
+            <input type="text" id="poi_id" value="{{ poi_id }}" onkeyup="filterList()">
+            <label for="mySelect" id>店铺选项</label>
+            <select id="mySelect" size="5">
+                {% for item in arr %}
+                    <option value="{{ item.1 }}" onclick="selectOption(this)">{{ item.0 }}</option>
+                {% endfor %}
+            </select>
+
+        </div>
+
+        <div>
+            <label for="cookie"> cookie</label>
+            <textarea id="cookie" name="cookie" rows="10" cols="30">{{ cookie }}</textarea>
+        </div>
+
+        <div>
+            <label for="=date">时间选择</label>
+            <input type="datetime-local" id="date">
+        </div>
+        <div>
+            <label for="type_select">类型选择</label>
+            <select name="type_select" id="type_select">
+                <option value="0" selected>夹心定时</option>
+                <option value="1">折扣价格定时</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="fiel01"></label>
+            <input type="file" id="fiel01">
+        </div>
+
+        <div id="output"></div>
+        <div class="button-group">
+            <button class="button btn btn-default">提交</button>
+        </div>
+
+        <div id="error">
+
+        </div>
+        <div id="error1">
+
+        </div>
+
+    </div>
+{% endblock %}
+
+
+{% block jsnr %}
+    <script>
+        function filterList() {
+            var input = $('#poi_id').val().toLowerCase();
+            $('#mySelect option').each(function () {
+                var text = $(this).text().toLowerCase();
+                $(this).toggle(text.indexOf(input) > -1);
+            });
+        }
+
+        function selectOption(selectedOption) {
+            document.getElementById('poi_id').value = selectedOption.value;
+            // document.getElementById('mySelect').style.display = 'none';
+        }
+
+
+        $('.btn-default').click(function () {
+            alert('确定更改')
+            $('#error').html("正在保存，请稍后")
+            $("#error1").empty();
+            var file = $('input[id=fiel01]')[0].files[0];
+            var poi_id = $('input[id=poi_id]').val();
+            var cookie = $('textarea[id=cookie]').val();
+            var type_select = $("#type_select").val();
+            var date = $("#date").val();
+            var csrf = $('input[name=csrfmiddlewaretoken]').val();
+            var formdata = new FormData();
+
+            formdata.append('file_obj', file);
+            formdata.append('poi_id', poi_id);
+            formdata.append('cookie', cookie);
+            formdata.append('type_select', type_select);
+            formdata.append('date', date);
+            formdata.append('csrfmiddlewaretoken', csrf);
+            $.ajax({
+                url: "/ds/{{num}}/{{ aa }}",
+                type: 'post',
+                data: formdata,
+                processData: false, // 不处理数据( 必须有)
+                contentType: false,  //不设置内容类型 ( 必须要)
+                success: function (res) {
+                    if (res['success']) {
+                        $('#error').html("保存成功")
+                    } else {
+                        $('#error').html(res['msg'])
+                    }
+
+                }
+            })
+        })
+
+        document.getElementById('fiel01').addEventListener('change', function (e) {
+            var file = e.target.files[0];
+            if (!file) {
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var data = e.target.result;
+                var workbook = XLSX.read(data, {type: 'binary'});
+                displayExcelData(workbook);
+            };
+            reader.readAsBinaryString(file);
+        });
+
+        function displayExcelData(workbook) {
+            var sheetName = workbook.SheetNames[0]; // 获取第一个工作表的名称
+            var sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1}); // 将工作表数据转换为 JSON 格式，header: 1 表示第一行作为标题
+
+            var outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = ''; // 清空之前的预览内容
+
+            // 将数据以表格形式显示在页面上
+            var table = document.createElement('table');
+            table.className = "preview-table";
+            sheetData.forEach(function (row, index) {
+                var tr = document.createElement('tr');
+                row.forEach(function (cell) {
+                    var td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+            outputDiv.appendChild(table);
+        }
+
+
+    </script>
+{% endblock %}
+
+

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Document</title>
+
+    <!-- 引入 flatpickr CSS -->
+    <link rel="stylesheet" href="../static/css/flatpickr.min.css">
+    ">
+
+    <!-- 引入 flatpickr JS -->
+    <script src="../static/js/flatpickr.js"></script>
+
+    <!-- 引入 flatpickr 中文语言包 -->
+    <script src="../static/js/flatpickr_zh.js"></script>
+    <script src="../static/js/jquery.js"></script>
+</head>
+<style>
+    /* 导航栏基础样式 */
+    .navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between; /* 返回按钮与主要功能区之间的空间分布 */
+        background-color: #f8f9fa;
+        padding: 10px 20px;
+    }
+
+    /* 返回按钮样式 */
+    .return-button {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #6c757d;
+        color: white;
+        cursor: pointer;
+    }
+
+    /* 主要功能区样式 */
+    .main-functions {
+        margin-left: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center; /* 内容居中对齐 */
+        flex: 1; /* 占据剩余空间 */
+    }
+
+    /* 时间范围选择样式 */
+    .time-selector {
+        display: flex;
+        margin-right: 10px;
+    }
+
+    .time-option {
+        margin-right: 5px;
+        padding: 5px 10px;
+        background-color: transparent;
+        cursor: pointer;
+        border: 1px solid gray;
+    }
+
+    /* 输入框样式 */
+    .search-input {
+        margin-right: 10px;
+        padding: 5px 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+
+    /* 提交与更多按钮容器 */
+    .submit-more-container {
+        display: flex;
+        align-items: center;
+    }
+
+    /* 提交按钮样式 */
+    .submit-button {
+
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+    }
+
+    /* 更多按钮样式 */
+    .more-button {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #adb5bd;
+        color: white;
+        cursor: pointer;
+        margin-left: 200px; /* 控制与提交按钮的间距 */
+    }
+
+    .date_box {
+        position: relative;
+    }
+
+    .date {
+        position: absolute;
+        display: none;
+        z-index: 9999;
+        left: -50%;
+    }
+
+</style>
+<body>
+<div class="navbar">
+    <!-- 返回按钮 -->
+    <button class="return-button">返回</button>
+
+    <!-- 主要功能区：时间选择框、输入框 -->
+    <div class="main-functions">
+        <div class="time-selector">
+            <button class="time-option">近7日</button>
+            <button class="time-option">近30日</button>
+            <div id="select_zdy" class="date_box">
+                <button class="time-option">自定义</button>
+                <input type="text" id="set_zdy" class="date" placeholder="请选择日期">
+            </div>
+            <div id="select_week" class="date_box">
+                <button class="time-option">按周</button>
+                <input type="week" id="set_week" class="date">
+            </div>
+            <div id="select_month" class="date_box">
+                <button class="time-option">按月</button>
+                <input type="month" id="set_month" class="date">
+            </div>
+
+        </div>
+        <input type="text" class="search-input" placeholder="搜索...">
+
+        <!-- 提交与更多按钮容器 -->
+        <div class="submit-more-container">
+            <button class="submit-button">提交</button>
+            <button class="more-button">日志</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        flatpickr.localize(flatpickr.l10ns.zh);
+        flatpickr('#set_zdy', {
+            locale: flatpickr.l10ns.zh,
+            enableTime: true,
+            noCalendar: false,
+            time_24hr: true,
+            mode: "range",
+            dateFormat: "Y-m-d",
+            defaultDate: ["today", "tomorrow"],
+
+        });
+
+    });
+
+    let deleList = $('.date');
+
+    function getWeekDateRange(yearWeekStr) {
+        /**
+         * 解析输入字符串，假设格式为 "YYYY-Www"
+         * 使用示例       let weekStr = "2024-W28";
+         let weekDateRange = getWeekDateRange(weekStr);
+         console.log(weekDateRange);
+
+         * 输出类似：{ start: "2024-07-08", end: "2024-07-14" }
+         */
+        const match = yearWeekStr.match(/^(\d{4})-W(\d{2})$/);
+        if (!match) {
+            throw new Error('Invalid input format. Expected "YYYY-Www".');
+        }
+
+        const year = parseInt(match[1], 10);
+        const week = parseInt(match[2], 10);
+
+        // ISO 8601 周的日期是从 1 月 1 日开始计算的
+        let date = new Date(year, 0, 1); // 月份是从 0 开始的，所以 0 是 1 月
+
+        // 获取 1 月 1 日是星期几（0 是周日，1 是周一，...，6 是周六）
+        let day = date.getDay();
+
+        // ISO 周的计算方式：如果 1 月 1 日不是周一，则找到该年的第一个周一
+        // 第一个周一的日期可能是在上一年的最后几天
+        // 通过减去 1 月 1 日是星期几的值（如果它是周日就减去 7 或 0），再加上 1，使其成为周一
+        date.setDate(date.getDate() - day + 1);
+
+        // 如果结果是去年的 12 月的最后几天，并且不是第一个周一，则需要调整年份
+        if (date.getMonth() === 0 && date.getDate() < 4) {
+            date.setDate(date.getDate() - 7);
+        }
+
+        // 计算目标周的第一天
+        date.setDate(date.getDate() + (week - 1) * 7);
+
+        // 设置开始日期和结束日期
+        let start = new Date(date);
+        let end = new Date(date);
+        end.setDate(end.getDate() + 6); // 加上 6 天得到结束日期（周日）
+
+        // 返回日期对象（或根据需要转换为字符串）
+        return {
+            start: start.toISOString().split('T')[0], // 转换为 ISO 格式的日期字符串
+            end: end.toISOString().split('T')[0]
+        };
+    }
+
+
+    $('#select_week').click(function () {
+        deleList.hide();
+        let week = $('#set_week');
+        week.css('display', 'block');
+        week.trigger('focus');
+        console.log(week.val());
+
+    });
+    $('#select_month').click(function () {
+        deleList.hide();
+        let month = $('#set_month')
+        month.css('display', 'block');
+        month.trigger('focus');
+        console.log(month.val());
+    });
+
+    $('#select_zdy').click(function () {
+        deleList.hide();
+        let zdy = $('#set_zdy')
+        zdy.css('display', 'block');
+        zdy.trigger('focus');
+        console.log(zdy.val());
+    });
+
+</script>
+
+
+</body>

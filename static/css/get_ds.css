@@ -1,0 +1,41 @@
+
+#main{
+    position: relative;
+}
+
+#list_ds {
+    margin-top: 10px;
+    /*margin-left: 10px;*/
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-header, .custom-cell {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.custom-header {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.custom-row:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.edit-link, .delete-link {
+    text-decoration: none;
+    color: blue;
+}
+
+.edit-link:hover, .delete-link:hover {
+    color: red;
+    cursor: pointer;
+
+}
+

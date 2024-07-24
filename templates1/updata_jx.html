@@ -1,0 +1,95 @@
+{% extends "beas.html" %}
+
+{% block title %}
+    更改夹心
+{% endblock %}
+
+{% block cssnr %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/updata_jx.css' %}">
+{% endblock %}
+
+{% block left %}
+    <li>
+        <label for="category1">更改夹心 <span
+                class="error"></span></label>
+        <input type="checkbox" id="category1">
+        <ul class="submenu default-open">
+            <li><a href="jx_rk">店铺商品信息入库/更新</a></li>
+            <li class="check"><a href="updata_jx">更改夹心</a></li>
+            {#                    <li>小类3</li>#}
+        </ul>
+    </li>
+{% endblock %}
+
+{% block centent %}
+    <div id="main">
+        <h2>更改夹心</h2>
+        <div>
+            <label for="poi_id"> 店铺id</label>
+            <input type="text" id="poi_id">
+        </div>
+
+        <div>
+            <label for="cookie"> cookie</label>
+            <textarea id="cookie" name="cookie" rows="10" cols="30"></textarea>
+        </div>
+
+        <div>
+            <label for="fiel01"></label>
+            <input type="file" id="fiel01">
+            {% csrf_token %}
+        </div>
+
+        <div>
+            <button class="btn btn-default">上传更改</button>
+        </div>
+
+        <div id="error">
+
+        </div>
+
+    </div>
+{% endblock %}
+
+
+{% block jsnr %}
+    <script>
+        $('aside > ul > li > ul > li').eq(1).addClass('check');
+        $(document).ready(function () {
+            // 使得带有.default-open类的.submenu元素展开
+            $('aside > ul > li > ul ').eq(0).css('max-height', 'none'); // 如果你想设置具体高度，可以替换为 '500px'
+        });
+        $('.btn-default').click(function () {
+            alert('确定更改')
+            $('#error').html("正在修改，请稍后")
+            var file = $('input[id=fiel01]')[0].files[0];
+            var poi_id = $('input[id=poi_id]').val();
+            var cookie = $('textarea[id=cookie]').val();
+            var csrf = $('input[name=csrfmiddlewaretoken]').val();
+            var formdata = new FormData();
+
+            formdata.append('file_obj', file);
+            formdata.append('poi_id', poi_id);
+            formdata.append('cookie', cookie);
+            formdata.append('csrfmiddlewaretoken', csrf);
+            $.ajax({
+                url: "/updata_jx/{{num}}",
+                type: 'post',
+                data: formdata,
+                processData: false, // 不处理数据( 必须有)
+                contentType: false,  //不设置内容类型 ( 必须要)
+                success: function (res) {
+                    if (res['msg']) {
+                        $('#error').html(res['msg'])
+                    } else {
+                        $('#error').html(res['succ'])
+
+                    }
+                }
+            })
+        })
+    </script>
+{% endblock %}
+
+

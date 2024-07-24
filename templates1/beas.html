@@ -1,0 +1,106 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} {% endblock %}</title>
+    {% load static %}
+
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <script src="{% static 'js/jquery.js' %}"></script>
+    {% block cssnr %}
+
+    {% endblock %}
+</head>
+<body>
+
+<header>
+    <nav>
+        <ul>
+            <li><a href="#">首页</a></li>
+            <li><a href="#">关于</a></li>
+            <li><a href="#">服务</a></li>
+            <li><a href="#">联系我们</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="content-wrapper">
+    <aside>
+        <ul>
+            <li>
+                <label for="category1">更改夹心 <span
+                        class="error"></span></label>
+                <input type="checkbox" id="category1">
+                <ul class="submenu">
+                    <li><a href="/jx_rk/0">店铺商品信息入库/更新</a></li>
+                    <li><a href="/updata_jx/0">更改夹心</a></li>
+                    {#                    <li>小类3</li>#}
+                </ul>
+            </li>
+            <li>
+                <label for="category2">批量改折扣价格 <span
+                        class="error">重复修改折扣价格同一家店的价格不用重复入库</span></label>
+                <input type="checkbox" id="category2">
+                <ul class="submenu">
+                    <li><a href="/jx_rk/1">店铺商品信息入库/更新</a></li>
+                    <li><a href="/zk_rk/1">折扣价格入库/更新</a></li>
+                    <li><a href="/download_excel/1">信息表下载</a></li>
+                    <li><a href="/updata_jg/1">更改折扣价格</a></li>
+                    {#                    <li>小类B</li>#}
+                </ul>
+            </li>
+            <li>
+                <label for="category3">折扣价格同步 <span
+                        class="error">入库操作，新店，老店、都要执行一次操作</span></label>
+                <input type="checkbox" id="category3">
+                <ul class="submenu">
+                    <li><a href="/jx_rk/2">店铺商品信息入库/更新 </a></li>
+                    <li><a href="/zk_rk/2">折扣价格入库/更新 <span
+                            class="error">这里可以多开窗口，新,老店一起跑</span></a></li>
+                    <li><a href="/jg_sync/2">折扣同步</a></li>
+                    {#                    <li>小类B</li>#}
+                </ul>
+            </li>
+            <li>
+                <label for="category4">搬菜单 <span class="error">这里新店不需要信入库！！</span></label>
+                <input type="checkbox" id="category4">
+                <ul class="submenu">
+                    <li><a href="/jx_rk/3">店铺商品信息入库/更新，老店执行操作</a></li>
+                    <li><a href="/move_product/3">菜单同步</a></li>
+                    {#                    <li>小类B</li>#}
+                </ul>
+            </li>
+            <li>
+                <label for="category5">销量替换 <span class="error">入库操作店要全部执行</span></label>
+                <input type="checkbox" id="category5">
+                <ul class="submenu">
+                    <li><a href="/jx_rk/4">商品信息入库/更新</a></li>
+                    <li><a href="/zk_rk/4">折扣价格入库/更新</a></li>
+                    <li><a href="/replace_priduct/4">销量替换</a></li>
+                    {#                    <li>小类B</li>#}
+                </ul>
+            </li>
+
+        </ul>
+    </aside>
+
+    <main>
+        {% block centent %}
+
+        {% endblock %}
+        <!-- 这里可以添加更多右边的内容 -->
+    </main>
+</div>
+
+<footer>
+    <p>版权信息 &copy; 2023</p>
+</footer>
+{% block jsnr %}
+
+{% endblock %}
+<script>
+
+</script>
+
+</body>
+</html>

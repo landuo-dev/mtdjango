@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <title>Title</title>
+    <link rel="stylesheet" href="{% static 'css/huatu.css' %}">
+    <link rel="stylesheet" href="{% static 'css/flatpickr.min.css' %}">
+    <script src="{% static 'js/jquery.js' %}"></script>
+    <script src="{% static 'js/echars.js' %}"></script>
+
+
+    <script src="{% static 'js/flatpickr.js' %}"></script>
+    <script src="{% static 'js/flatpickr_zh.js' %}"></script>
+
+
+</head>
+<style>
+    .date_box {
+        position: relative;
+    }
+
+    .date {
+        position: absolute;
+        display: none;
+        z-index: 9999;
+        left: -50%;
+    }
+
+    .check {
+        background: #111111;
+        color: white;
+    }
+</style>
+<body>
+
+<div id="main-content">
+
+    <div class="container">
+        <nav>
+            <span class="nav-s1">{{ user.店铺名称 }}：{{ user.ID号码|floatformat:"0" }} -- 组长：{{ user.组长 }} -- 店铺对接负责人：{{ user.店铺对接负责人 }} </span>
+        </nav>
+        <div class="navbar">
+            {% csrf_token %}
+            {#        <label for="mySelect" id>店铺选项</label>#}
+            <select id="mySelect" size="5">
+                {% for item in arr %}
+                    <option value="{{ item.1 }}" onclick="selectOption(this)">{{ item.0 }}</option>
+                {% endfor %}
+            </select>
+            <!-- 返回按钮 -->
+            <button class="return-button">返回</button>
+
+            <!-- 主要功能区：时间选择框、输入框 -->
+            <div class="main-functions">
+                <div class="time-selector">
+                    <span class="showtime">已选时间：<span id="starttime"></span>&nbsp;至 &nbsp; <span
+                            id="endtime"></span></span>
+                    <button class="time-option fixedDates" onclick="addcheck(this)" data-time="7">近7日</button>
+                    <button class="time-option fixedDates" onclick="addcheck(this)" data-time="30">近30日</button>
+                    <div id="select_zdy" class="date_box">
+                        <button class="time-option" onclick="addcheck(this)">自定义</button>
+                        <input type="text" id="set_zdy" class="date" placeholder="请选择日期">
+                    </div>
+                    <div id="select_week" class="date_box">
+                        <button class="time-option" onclick="addcheck(this)">按周</button>
+                        <input type="week" id="set_week" class="date">
+                    </div>
+                    <div id="select_month" class="date_box">
+                        <button class="time-option" onclick="addcheck(this)">按月</button>
+                        <input type="month" id="set_month" class="date">
+                    </div>
+                </div>
+                <input type="text" id="poi_id" placeholder="在此输入并按回车提交" onkeyup="filterList()"
+                       value="{{ poi_id }}">
+
+
+                <!-- 提交与更多按钮容器 -->
+                <div class="submit-more-container">
+                    <button id="defaultButton">提交</button>
+                    {#                    <button class="more-button" onclick="openModal()">刷单量</button>#}
+                    <button class="more-button" onclick="openModal()">填写日志</button>
+                </div>
+            </div>
+        </div>
+        <!-- 在HTML中预定义一个用于显示信息的div -->
+        <div id="infoDiv"></div>
+        <div class="main">
+            <!-- 这里放置动态生成或静态的div，示例中先放入一些静态div -->
+            <div class="item" id="item1">Div 1</div>
+            <div class="item">Div 2</div>
+            <div class="item">Div 3</div>
+            <div class="item">Div 4</div>
+            <div class="item">Div 5</div>
+            <div class="item">Div 6</div>
+            <div class="item">Div 6</div>
+            <div class="item">Div 6</div>
+            <div class="item">Div 8</div>
+
+            <div class="item">Div 9</div>
+            <div class="item">Div 10</div>
+            <div class="item">Div 11</div>
+
+            <div class="item">Div 12</div>
+            <div class="item">Div 13</div>
+            <div class="item">Div 14</div>
+            <div class="item">Div 15</div>
+            <div class="item">Div 16</div>
+            <div class="item">Div 14</div>
+            <!-- 更多div... -->
+        </div>
+
+    </div>
+
+    {% csrf_token %}
+</div>
+<div id="log-modal" class="log-container">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+        <h1 id="log-title"></h1>
+        <input type="date" onchange="handleDateChange(this.value)" id="select_date01">
+        <textarea id="log-input" placeholder="刷单量：
+日志：...">刷单量：
+日志：
+</textarea>
+        <button id="submit-log">提交日志</button>
+        <button id="cancel">取消</button>
+    </div>
+</div>
+
+<script>
+
+    document.getElementById('poi_id').addEventListener('focus', function () {
+        document.getElementById('mySelect').style.display = 'block';
+    });
+    // 隐藏下拉列表
+    document.getElementById('poi_id').addEventListener('blur', function () {
+        setTimeout(function () {
+            document.getElementById('mySelect').style.display = 'none';
+        }, 3000); // 延迟隐藏，以允许鼠标移动到选项上
+    });
+
+    function filterList() {
+        var input = $('#poi_id').val().toLowerCase();
+        $('#mySelect option').each(function () {
+            var text = $(this).text().toLowerCase();
+            $(this).toggle(text.indexOf(input) > -1);
+        });
+    }
+
+    function selectOption(selectedOption) {
+        document.getElementById('poi_id').value = selectedOption.value;
+        // document.getElementById('mySelect').style.display = 'none';
+    }
+
+
+    function set_tupian(chartDom, titlename, valname, xdata, ydata, color = 'blue') {
+        const myChart = echarts.init(chartDom);
+        option = {
+            title: {
+                text: titlename
+            },
+            legend: {},
+            tooltip: {
+                // 配置tooltip，使其在鼠标悬停时显示
+                trigger: 'axis', // 触发类型，'item' 表示数据项图形触发，此时tooltip会在鼠标悬停数据项时显示
+                axisPointer: {
+                    show: true,
+                    type: 'cross',
+                    snap: true,
+                    lineStyle: {
+                        type: 'dashed',
+                        width: 2,
+                        color: "orange",
+                    },
+                    animation: true,
+                },
+
+                formatter: '{b0}<br /> {a0}：{c0}',
+                backgroundColor: 'rgba(255,122,0,0.7)', // 提示框背景颜色
+                textStyle: {
+                    color: '#fff', // 提示框文字颜色
+                },
+            },
+            xAxis: {
+                name: "日期",
+                type: 'category',
+                data: xdata,
+            },
+            yAxis: {
+                name: valname,
+                type: 'value'
+            },
+            series: [
+                {
+                    name: valname,
+                    data: ydata,
+                    type: 'line',
+                    symbol: 'circle',
+                    symbolSize: 9,
+                    emphasis: { // 添加这一块来配置高亮效果
+                        scale: true, // 放大高亮的点
+                        scaleSize: 9, // 高亮放大比例，可选
+                        itemStyle: {
+                            shadowBlur: 9, // 阴影模糊度
+                            scaleSize: 1.2,
+                            shadowColor: 'rgba(255, 165, 0, 0.5)', // 阴影颜色
+                            borderWidth: 9, // 边框宽度
+                            borderColor: 'orange', // 边框颜色，与高亮颜色相匹配
+                        },
+                    },
+                    itemStyle: {
+                        color: color // 设置系列的颜色为蓝色
+                    }
+                },
+            ]
+        };
+
+        option && myChart.setOption(option);
+
+        myChart.on('click', function (params) {
+            if (params.componentType === 'series') {
+                let chartDom = $(myChart.getDom()); // 获取myChart所在的DOM元素，并转换为jQuery对象
+                chartDom.find('.newDiv').remove();
+                $.ajax({
+                    url: '/get_tupian',
+                    type: 'get',
+                    data: {
+                        "date": params.name,
+                        "poi_id":{{ poi_id }},
+                    },
+                    success: function (data) {
+                        if (data['success']) {
+                            let text = params.name + "\n" + data['success'];
+                            chartDom.append('<div class="newDiv">' + text.replace(/\n/g, '<br>') + '</div>');
+                        } else {
+                            let text = params.name + "\n" + data['msg'];
+                            chartDom.append('<div class="newDiv">' + text.replace(/\n/g, '<br>') + '</div>');
+                        }
+
+
+                    }
+                })
+
+            }
+        });
+
+
+        return myChart
+    }
+
+
+    function set_tupian_many(chartDom, titlename, valname, xdata, seriesData) {
+        console.log(seriesData);
+        const myChart = echarts.init(chartDom);
+        option = {
+            title: {
+                text: titlename
+            },
+            legend: {},
+            tooltip: {
+                // 配置tooltip，使其在鼠标悬停时显示
+                trigger: 'axis', // 触发类型，'item' 表示数据项图形触发，此时tooltip会在鼠标悬停数据项时显示
+                axisPointer: {
+                    show: true,
+                    type: 'cross',
+                    snap: true,
+                    lineStyle: {
+                        type: 'dashed',
+                        width: 2,
+                        color: "orange",
+                    },
+                    animation: true,
+                },
+                formatter: function (params) {
+                    var formattedText = params[0].name + '<br />';// {b0}部分，通常是类目名称
+                    for (var i = 0; i < params.length; i++) {
+                        // 确保数据存在且非空
+                        if (params[i].value != null && params[i].value !== '') {
+                            // 第一个系列直接添加，避免重复添加名称
+                            if (i === 0) {
+                                formattedText += params[i].seriesName + '：' + params[i].value + '<br />';
+                            } else {
+                                formattedText += params[i].seriesName + '：' + params[i].value + '<br />';
+                            }
+                        }
+                    }
+
+                    return formattedText.trim(); // 使用trim()去除最后一个<br />
+                },
+                backgroundColor: 'rgba(255,122,0,0.7)', // 提示框背景颜色
+                textStyle: {
+                    color: '#fff', // 提示框文字颜色
+                },
+            },
+            xAxis: {
+                name: "日期",
+                type: 'category',
+                data: xdata,
+            },
+            yAxis: {
+                name: valname,
+                type: 'value'
+            },
+            series: seriesData.map(series => ({
+                name: series.name,
+                data: series.data,
+                type: 'line',
+                symbol: 'circle',
+                symbolSize: 9,
+                emphasis: { // 添加这一块来配置高亮效果
+                    scale: true, // 放大高亮的点
+                    scaleSize: 9, // 高亮放大比例，可选
+                    itemStyle: {
+                        shadowBlur: 9, // 阴影模糊度
+                        scaleSize: 1.2,
+                        shadowColor: 'rgba(255, 165, 0, 0.5)', // 阴影颜色
+                        borderWidth: 9, // 边框宽度
+                        borderColor: 'orange', // 边框颜色，与高亮颜色相匹配
+                    },
+                },
+
+            })),
+        };
+
+        option && myChart.setOption(option);
+
+        myChart.on('click', function (params) {
+            if (params.componentType === 'series') {
+                let chartDom = $(myChart.getDom()); // 获取myChart所在的DOM元素，并转换为jQuery对象
+                chartDom.find('.newDiv').remove();
+                $.ajax({
+                    url: '/get_tupian',
+                    type: 'get',
+                    data: {
+                        "date": params.name,
+                        "poi_id":{{ poi_id }},
+                    },
+                    success: function (data) {
+                        if (data['success']) {
+                            let text = params.name + "\n" + data['success'];
+                            chartDom.append('<div class="newDiv">' + text.replace(/\n/g, '<br>') + '</div>');
+                        } else {
+                            let text = params.name + "\n" + data['msg'];
+                            chartDom.append('<div class="newDiv">' + text.replace(/\n/g, '<br>') + '</div>');
+                        }
+
+
+                    }
+                })
+
+            }
+        });
+
+        return myChart
+    }
+
+    function extractElementAtPosition(array, position) {
+        return array.map(item => {
+            if (Array.isArray(item) && item.length > position) {
+                return parseFloat(item[position].toFixed(2)); // 如果数组长度足够，返回指定位置的值
+            } else {
+                return 0; // 否则返回0
+            }
+        });
+    }
+
+    // <!--    http://192.168.2.222:8555/push_qd/10140619 -->
+    const dataFromServer = {{ data|safe }}; // 注意使用safe过滤器来标记数据为安全的
+
+
+    const items = $('.item')
+    const item1 = items[0]
+    const item2 = items[1]
+    const item3 = items[2]
+    const item4 = items[3]
+    const item5 = items[4]
+    const item6 = items[5]
+    const item7 = items[6]
+    const item8 = items[7]
+    const item9 = items[8]
+    const item10 = items[9]
+    const item11 = items[10]
+    const item12 = items[11]
+    const item13 = items[12]
+    const item14 = items[13]
+    const item15 = items[14]
+
+    const item16 = items[15]
+    const item17 = items[16]
+    const item18 = items[17]
+
+    console.log(item14)
+
+    {#进店率   单次进店成本 #}
+    let xdata = dataFromServer.map(item => item['ctime']);
+    var starttime = xdata[0];
+    var endtime = xdata[xdata.length - 1];
+    $('#starttime').html(starttime);
+    $("#endtime").html(endtime);
+    let startTime = new Date(starttime).getTime() / 1000;
+    let endTime = new Date(endtime).getTime() / 1000;
+    let yyedata = dataFromServer.map(item => item['有效订单']);
+    let shuadan = dataFromServer.map(item => item['刷单量']);
+    let youxiao = dataFromServer.map(item => item['收入']);
+    let shouru = dataFromServer.map(item => item['实付单均价']);
+    let tuiguanghuafei = dataFromServer.map(item => item['推广花费']);
+    let tuiguangbaoguang = dataFromServer.map(item => item['推广曝光量']);
+    let tuiguangjindian = dataFromServer.map(item => item['推广进店量']);
+    let jindianlv = dataFromServer.map(item => item['进店率']);
+    let dancijindianchengben = dataFromServer.map(item => item['单次进店成本']);
+    let baoguanglv = dataFromServer.map(item => item['曝光人数']);
+    let rudianzhuanhuanlv = dataFromServer.map(item => item['入店转换率']);
+    let xiadanzhuanhuanlv = dataFromServer.map(item => item['下单转换率']);
+    let shangjialiebiao = dataFromServer.map(item => item['商家列表']);
+
+    let shangjialiebiaodianjicishu = extractElementAtPosition(shangjialiebiao, 0);
+    let shangjialiebiaojindiancishu = extractElementAtPosition(shangjialiebiao, 1);
+    let shangjialiebiaojindianzhuanhuanlv = extractElementAtPosition(shangjialiebiao, 2);
+
+    let sousuo = dataFromServer.map(item => item['搜索']);
+
+    let sousuodianjicishu = extractElementAtPosition(sousuo, 0);
+    let sousuojindiancishu = extractElementAtPosition(sousuo, 1);
+    let sousuojindianzhuanhuanlv = extractElementAtPosition(sousuo, 2);
+
+    {#console.log(shangjialiebiaodianjicishu);#}
+
+    let seriesData = [
+        {name: '订单', data: yyedata},
+        {name: '刷单量', data: shuadan},
+        {name: '真实单量', data: yyedata.map((item, index) => item - shuadan[index])},
+    ];
+
+    console.log(seriesData);
+    const yingyetu = set_tupian_many(item1, "订单", "订单", xdata, seriesData)
+    {#const yingyetu = set_tupian(item1, '有效订单', '订单量', xdata, yyedata)#}
+    const youxiaotu = set_tupian(item2, "收入", "收入", xdata, youxiao)
+    const shourutu = set_tupian(item3, "实付单均价", "实付单均价", xdata, shouru)
+
+    const baoguangliangtu = set_tupian(item4, "曝光量", "曝光量", xdata, baoguanglv)
+    const rudianzhuanhualvtu = set_tupian(item5, "入店转换率", "入店转换率", xdata, rudianzhuanhuanlv)
+    const xiadanzhuanhuanlvtu = set_tupian(item6, "下单转换率", "下单转换率", xdata, xiadanzhuanhuanlv)
+
+    const tuiguanghuafeitu = set_tupian(item7, "推广花费", "推广花费", xdata, tuiguanghuafei)
+    const tuiguangbaoguangtu = set_tupian(item8, "推广曝光次数", "推广曝光次数", xdata, tuiguangbaoguang)
+    const tuiguangjindiantu = set_tupian(item9, "推广进店量", "推广进店量", xdata, tuiguangjindian)
+
+    const jindianlvtu = set_tupian(item10, "进店率", "进店率", xdata, jindianlv)
+    const dancijindianchengbentu = set_tupian(item11, "单次进店成本", "单次进店成本", xdata, dancijindianchengben)
+
+    seriesData = [
+        {name: '推广花费', data: tuiguanghuafei},
+        {name: '推广曝光次数', data: tuiguangbaoguang},
+        {name: '推广进店量', data: tuiguangjindian},
+        // ...
+    ];
+    const tuiguangzonghetu = set_tupian_many(item12, "推广综合图", "推广综合", xdata, seriesData)
+
+    const shangjialiebiaodianjicishutu = set_tupian(item13, "商家列表曝光次数", "曝光次数", xdata, shangjialiebiaodianjicishu, 'orange')
+    const shangjialiebiaojindiancishutu = set_tupian(item14, "商家列表入店次数", "入店次数", xdata, shangjialiebiaojindiancishu, 'green')
+    const shangjialiebiaojindianzhuanhuanlvtu = set_tupian(item15, "商家列表入店转换率", "入店转换率", xdata, shangjialiebiaojindianzhuanhuanlv, 'red')
+
+    const sousuodianjicishutu = set_tupian(item16, "搜索曝光次数", "曝光次数", xdata, sousuodianjicishu, 'orange')
+    const sousuojindiancishutu = set_tupian(item17, "搜索入店次数", "入店次数", xdata, sousuojindiancishu, 'green')
+    const sousuojindianzhuanhuanlvtu = set_tupian(item18, "搜索入店转换率", "入店转换率", xdata, sousuojindianzhuanhuanlv, 'red')
+
+    {# 曝光量    入店转化率  下单转化率   #}
+
+    {#let startTime = 1716134400;#}
+    {#let endTime = Math.floor(new Date().getTime() / 1000);#}
+
+
+    // scripts.js
+
+
+    const logTitle = document.getElementById('log-title');
+    const submitLog = document.getElementById('submit-log');
+    const logModal = document.getElementById('log-modal');
+
+    // 设置标题为当前日期
+    logTitle.textContent = new Date().toLocaleDateString();
+    $("#select_date01").val(new Date().toISOString().substring(0, 10));
+
+    // 打开模态弹窗
+    function openModal() {
+        logModal.style.display = 'block';
+
+        // 设置输入框焦点
+        let loginput = $("#log-input");
+
+        {#loginput.html('');#}
+        loginput.html('刷单量：\n日志：\n');
+        (function setCursorAtEnd(el) {
+            el.focus();
+            el.setSelectionRange(el.value.length, el.value.length);
+        })(loginput[0]);
+    }
+
+    // 关闭模态弹窗
+    function closeModal() {
+        logModal.style.display = 'none';
+
+    }
+
+    // 在页面加载后立即打开模态弹窗
+
+
+    // 为提交按钮添加事件监听器
+    submitLog.addEventListener('click', function (event) {
+        event.preventDefault();
+        const logInput = document.getElementById('log-input');
+        $.ajax({
+            url: '/set_tupian/',
+            method: 'POST',
+            data: {
+                "poi_id": {{ poi_id }},
+                "text": logInput.value,
+                "date": $("#select_date01").val(),
+                "csrfmiddlewaretoken": $('input[name=csrfmiddlewaretoken]').val(),
+
+            },
+            success: function (response) {
+                console.log(response.msg);
+                if (response.success) {
+                    alert(response.success);
+                } else {
+                    alert(response.msg);
+                }
+                {#刷新网页#}
+                location.reload();
+            }
+        })
+        logInput.value = ''; // 清空输入框
+        closeModal(); // 关闭模态弹窗
+    });
+
+    $('#cancel').click(function () {
+        closeModal();
+    })
+
+    function addcheck(ss) {
+        $(".time-option").removeClass('check');
+        $(ss).addClass('check');
+    }
+
+    function handleDateChange(dateValue) {
+        console.log('Selected date:', dateValue);
+        $("#log-title").html(dateValue);
+        // 在这里处理日期改变的逻辑
+    }
+
+    $(".return-button").click(function () {
+
+        window.location.href = "/";
+        console.log('ss');
+    })
+</script>
+<script src="{% static 'js/huatu/rq.js' %}"></script>
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+{% extends "beas.html" %}
+
+{% block title %}
+    菜单同步
+{% endblock %}
+
+{% block cssnr %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/updata_jx.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sync_jg.css' %}">
+{% endblock %}
+
+{% block centent %}
+    <div id="main">
+        {% csrf_token %}
+        <h2>菜单同步</h2>
+        <div>
+            <label for="poi_id_old"> 老店铺id</label>
+            <input type="text" id="poi_id_old" value="{{ poi_id_old }}" onkeyup="filterList_old()">
+            <label for="mySelect_old" id>店铺选项</label>
+            <select id="mySelect_old" size="5">
+                {% for item in arr %}
+                    <option value="{{ item.1 }}" onclick="selectOption_old(this)">{{ item.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="cookie_old"> 老店店铺cookie</label>
+            <textarea id="cookie_old" name="cookie" rows="10" cols="30"></textarea>
+        </div>
+        <div>
+            <label for="poi_id_new">新店铺id</label>
+            <input type="text" id="poi_id_new" value="{{ poi_id_new }}" onkeyup="filterList()">
+            <label for="mySelect" id>店铺选项</label>
+            <select id="mySelect" size="5">
+                {% for item in arr %}
+                    <option value="{{ item.1 }}" onclick="selectOption(this)">{{ item.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="cookie"> 新店铺cookie</label>
+            <textarea id="cookie" name="cookie" rows="10" cols="30"></textarea>
+        </div>
+
+        <div>
+            <label for="description"> 描述不能同步，给一个默认的描述，不填则默认为空</label>
+            <textarea id="description" name="description" rows="10" cols="30"></textarea>
+        </div>
+
+        <div>
+            <button class="btn btn-default">提交</button>
+        </div>
+
+        <div id="error">
+
+        </div>
+        <div id="error1">
+
+        </div>
+
+    </div>
+{% endblock %}
+
+
+{% block jsnr %}
+    <script>
+        function filterList() {
+            var input = $('#poi_id_new').val().toLowerCase();
+            $('#mySelect option').each(function () {
+                var text = $(this).text().toLowerCase();
+                $(this).toggle(text.indexOf(input) > -1);
+            });
+        }
+
+        function selectOption(selectedOption) {
+            document.getElementById('poi_id_new').value = selectedOption.value;
+            // document.getElementById('mySelect').style.display = 'none';
+        }
+
+        function filterList_old() {
+            var input = $('#poi_id_old').val().toLowerCase();
+            $('#mySelect_old option').each(function () {
+                var text = $(this).text().toLowerCase();
+                $(this).toggle(text.indexOf(input) > -1);
+            });
+        }
+
+        function selectOption_old(selectedOption) {
+            document.getElementById('poi_id_old').value = selectedOption.value;
+            // document.getElementById('mySelect').style.display = 'none';
+        }
+
+
+        $('.btn-default').click(function () {
+            alert('确定更改')
+            $('#error').html("正在修改，请稍后");
+            $("#error1").empty();
+            var poi_id_new = $('input[id=poi_id_new]').val();
+            var poi_id_old = $('input[id=poi_id_old]').val();
+            var cookie = $('textarea[id=cookie]').val();
+            var cookie_old = $('textarea[id=cookie_old]').val();
+            var description = $('textarea[id=description]').val() || '1';
+            var csrf = $('input[name=csrfmiddlewaretoken]').val();
+            var formdata = new FormData();
+            formdata.append('poi_id_new', poi_id_new);
+            formdata.append('poi_id_old', poi_id_old);
+            formdata.append('cookie', cookie);
+            formdata.append('cookie_old', cookie_old);
+            formdata.append('description', description);
+            formdata.append('csrfmiddlewaretoken', csrf);
+
+            $.ajax({
+                url: "/move_product/{{num}}/{{ aa }}",
+                type: 'post',
+                data: formdata,
+                processData: false, // 不处理数据( 必须有)
+                contentType: false,  //不设置内容类型 ( 必须要)
+                success: function (res) {
+                    if (res['msg']) {
+                        $('#error').html(res['msg'])
+                    } else {
+                        $('#error').html(res['succ'])
+
+                    }
+                    let htmlString = res['arr'].map(item => `<li>${item}</li>`).join(''); // 生成HTML字符串，每个item包裹在<li>标签内
+
+                    // 将生成的HTML字符串设置到#error1元素内
+                    $('#error1').html('<ul>' + htmlString + '</ul>'); // 注意添加<ul>来包裹<li>，保持良好的HTML结构
+                }
+            })
+        })
+    </script>
+{% endblock %}
+
+

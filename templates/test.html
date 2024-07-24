@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>侧边栏下拉内容</title>
+    <link rel="stylesheet">
+</head>
+<style>
+    .content-wrapper {
+        display: flex;
+    }
+
+    .sidebar {
+        width: 200px;
+        background-color: #f8f9fa;
+        padding: 10px;
+    }
+
+    .sidebar-item {
+        margin-bottom: 10px;
+    }
+
+    .sidebar-header {
+        cursor: pointer;
+    }
+
+    .sidebar-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+    }
+
+    .sidebar-content.open {
+        max-height: 500px; /* 足够大的高度来显示内容 */
+    }
+
+    /* 可选的箭头图标 */
+    .sidebar-header::after {
+        content: ' ►';
+        display: inline-block;
+        margin-left: 5px;
+        transition: transform 0.3s ease-out;
+    }
+
+    .sidebar-header.open::after {
+        transform: rotate(90deg);
+    }
+</style>
+
+
+<body>
+
+<div class="content-wrapper">
+    <aside class="sidebar">
+        <div class="sidebar-item">
+            <h3 class="sidebar-header" id="category1-header">更改夹心</h3>
+            <div class="sidebar-content" id="category1-content">
+                <ul>
+                    <li><a href="#">店铺商品信息入库/更新</a></li>
+                    <li><a href="#">更改夹心</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="sidebar-item">
+            <h3 class="sidebar-header" id="category2-header">批量改折扣价格</h3>
+            <div class="sidebar-content" id="category2-content">
+                <ul>
+                    <li><a href="#">折扣价格入库/更新</a></li>
+                    <li><a href="#">下载折扣表格</a></li>
+                    <li><a href="#">更改折扣价格</a></li>
+                </ul>
+            </div>
+        </div>
+        <!-- 更多侧边栏项... -->
+    </aside>
+    <main>
+        <!-- 右侧主要内容区域 -->
+    </main>
+</div>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+    // 获取所有的侧边栏头部和内容
+    var sidebarHeaders = document.querySelectorAll('.sidebar-header');
+    sidebarHeaders.forEach(function(header) {
+        header.addEventListener('click', function() {
+            // 切换内容区域的显示和隐藏
+            var contentId = this.id + '-content';
+            var content = document.getElementById(contentId);
+            content.classList.toggle('open');
+            // 切换箭头方向
+            this.classList.toggle('open');
+        });
+    });
+
+    // 假设你想默认展开第一个子菜单
+    var firstHeader = document.getElementById('category1-header');
+    var firstContent = document.getElementById('category1-content');
+    firstContent.classList.add('open');
+    firstHeader.classList.add('open');
+});
+
+</script>
+
+</body>
+</html>
+
+</body>
+</html>

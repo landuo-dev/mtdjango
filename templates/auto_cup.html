@@ -1,0 +1,142 @@
+{% extends "beas.html" %}
+
+{% block title %}
+    自动发券
+{% endblock %}
+
+{% block cssnr %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/updata_jx.css' %}">
+{% endblock %}
+
+
+{% block centent %}
+    <div id="main">
+        <h2>自动发券</h2>
+        {% csrf_token %}
+        <div>
+            <label for="poi_id"> 店铺id</label>
+            <input type="text" id="poi_id" value="{{ poi_id }}" onkeyup="filterList()">
+            <label for="mySelect" id>店铺选项</label>
+            <select id="mySelect" size="5">
+                {% for item in arr %}
+                    <option value="{{ item.1 }}" onclick="selectOption(this)">{{ item.0 }}</option>
+                {% endfor %}
+            </select>
+
+        </div>
+
+        <div>
+            <label for="type_select">类型选择</label>
+            <select name="type_select" id="type_select">
+                {#                <option value="0">粉丝顾客</option>#}
+                <option value="1" selected>昨日进店未下单顾客</option>
+                {#                <option value="2">写点评内容的顾客</option>#}
+                {#                <option value="3">不评价顾客</option>#}
+            </select>
+        </div>
+
+        <div>
+            <label for="time_select">时间选择</label>
+            <select name="time_select" id="time_select">
+                <option value="10">每天早上十点自动发送</option>
+                <option value="15">每天下午三点自动发送</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="limit_price"> 使用门槛</label>
+            <input type="text" id="limit_price">
+        </div>
+
+        <div>
+            <label for="price"> 优惠金额</label>
+            <input type="text" id="price">
+        </div>
+
+        <div>
+            <label for="day">券有效期</label>
+            <select name="day" id="day">
+                <option value="604800" selected>7</option>
+                <option value="1296000">15</option>
+                <option value="2592000">30</option>
+            </select>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-default">提交</button>
+        </div>
+
+        <div id="error">
+
+        </div>
+        <div id="error1">
+
+        </div>
+
+    </div>
+{% endblock %}
+
+
+{% block jsnr %}
+    <script>
+
+        function filterList() {
+            var input = $('#poi_id').val().toLowerCase();
+            $('#mySelect option').each(function () {
+                var text = $(this).text().toLowerCase();
+                $(this).toggle(text.indexOf(input) > -1);
+            });
+        }
+
+        function selectOption(selectedOption) {
+            document.getElementById('poi_id').value = selectedOption.value;
+            // document.getElementById('mySelect').style.display = 'none';
+        }
+
+
+
+        $('.btn-default').click(function () {
+            alert('确定更改')
+            $("#error1").empty();
+            $('#error').html("正在保存，请稍后")
+            var poi_id = $('input[id=poi_id]').val();
+            var limit_price = $('input[id=limit_price]').val();
+            var price = $('input[id=price]').val();
+            var cookie = $('textarea[id=cookie]').val();
+            var type_select = $("#type_select").val();
+            var time_select = $("#time_select").val();
+            var day = $("#day").val();
+            var csrf = $('input[name=csrfmiddlewaretoken]').val();
+            var formdata = new FormData();
+
+
+            formdata.append('poi_id', poi_id);
+            formdata.append('limit_price', limit_price);
+            formdata.append('price', price);
+            formdata.append('day', day);
+            formdata.append('cookie', cookie);
+            formdata.append('type_select', type_select);
+            formdata.append('time_select', time_select);
+            formdata.append('csrfmiddlewaretoken', csrf);
+            $.ajax({
+                url: "/jzyx_2/{{num}}/{{ aa }}",
+                type: 'post',
+                data: formdata,
+                processData: false, // 不处理数据( 必须有)
+                contentType: false,  //不设置内容类型 ( 必须要)
+                success: function (res) {
+                    if (res['success']) {
+                        $('#error').html("保存成功")
+                    } else {
+                        $('#error').html(res['msg'])
+                    }
+
+                }
+            })
+        })
+
+    </script>
+{% endblock %}
+
+

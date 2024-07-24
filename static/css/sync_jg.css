@@ -1,0 +1,72 @@
+/* 通用样式 */
+/*body {*/
+/*  font-family: Arial, sans-serif;*/
+/*  margin: 0;*/
+/*  padding: 20px;*/
+/*}*/
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input[type="text"],
+textarea,
+input[type="file"] {
+  width: 100%;
+  max-width: 300px; /* 根据需要调整最大宽度 */
+  padding: 5px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+textarea {
+  resize: vertical; /* 允许垂直调整大小 */
+  height: 100px; /* 初始高度 */
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #4CAF50; /* 绿色 */
+  border: none;
+  border-radius: 4px;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049; /* 鼠标悬停时的颜色 */
+}
+
+#error {
+  color: red; /* 错误信息使用红色字体 */
+  margin-top: 10px;
+}
+
+.error {
+  color: red; /* 错误信息使用红色字体 */
+  margin-top: 10px;
+}
+
+
+main {
+    display: flex; /* 使用Flexbox布局 */
+    justify-content: center; /* 水平居中 */
+    /*align-items: center; !* 垂直居中 *!*/
+    /*height: 100vh; !* 设置main元素高度为视口高度，确保内容可以居中 *!*/
+    margin: 0; /* 移除默认的margin，确保内容从视口边缘开始居中 */
+}
+
+#main {
+    /* 根据需要添加样式来布局#main内部的元素 */
+    text-align: left; /* 文本左对齐，或者根据需要设置 */
+    width: 100%; /* 如果需要限制宽度，可以设置一个具体的值 */
+    max-width: 600px; /* 例如，最大宽度设置为600px */
+}

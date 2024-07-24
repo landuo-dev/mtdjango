@@ -1,0 +1,122 @@
+{% extends "beas.html" %}
+
+{% block title %}
+    店铺商品折扣入库
+{% endblock %}
+
+{% block cssnr %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/updata_jx.css' %}">
+{% endblock %}
+
+{% block centent %}
+    <div id="main">
+
+        <div id="myDialog">
+            <div id="myDialogContent">
+                <span class="close" id="closeDialogBtn">&times;</span>
+                <p>入库操作只需要执行一次，除非你添加了物品，或者在美团页面进行操作了， 你确定要继续吗？</p>
+                <button id="confirmBtn">确认</button>
+                <button id="cancelBtn">取消</button>
+            </div>
+
+        </div>
+
+        {% csrf_token %}
+        <h2>店铺商品折扣入库</h2>
+        <div>
+            <label for="poi_id"> 店铺id</label>
+            <input type="text" id="poi_id" value="{{ poi_id }}" onkeyup="filterList()">
+            <label for="mySelect" id>店铺选项</label>
+            <select id="mySelect" size="5">
+                {% for item in arr %}
+                    <option value="{{ item.1 }}" onclick="selectOption(this)">{{ item.0 }}</option>
+                {% endfor %}
+            </select>
+
+        </div>
+
+        <div>
+            <label for="cookie"> cookie</label>
+            <textarea id="cookie" name="cookie" rows="10" cols="30">{{ cookie }}</textarea>
+        </div>
+
+        <div>
+            <button id="openDialogBtn">提交</button>
+        </div>
+
+        <div id="error">
+
+        </div>
+            <div id="error1">
+
+        </div>
+
+    </div>
+{% endblock %}
+
+
+{% block jsnr %}
+    <script>
+     function filterList() {
+            var input = $('#poi_id').val().toLowerCase();
+            $('#mySelect option').each(function () {
+                var text = $(this).text().toLowerCase();
+                $(this).toggle(text.indexOf(input) > -1);
+            });
+        }
+
+        function selectOption(selectedOption) {
+            document.getElementById('poi_id').value = selectedOption.value;
+            // document.getElementById('mySelect').style.display = 'none';
+        }
+
+        $(document).ready(function () {
+
+            $('#openDialogBtn').click(function () {
+                $('#myDialog').show();
+            });
+
+            $('.close, #cancelBtn').click(function () {
+                $('#myDialog').hide();
+            });
+
+            $('#confirmBtn').click(function () {
+                {#alert('确定更改');#}
+                $('#myDialog').hide();
+                $('#error').html("正在修改，请稍后")
+                $("#error1").empty();
+                var poi_id = $('input[id=poi_id]').val();
+                var cookie = $('textarea[id=cookie]').val();
+                var csrf = $('input[name=csrfmiddlewaretoken]').val();
+                var formdata = new FormData();
+
+                formdata.append('poi_id', poi_id);
+                formdata.append('cookie', cookie);
+                formdata.append('csrfmiddlewaretoken', csrf);
+                $.ajax({
+                    url: "/zk_rk/{{ num }}/{{ aa }}",
+                    type: 'post',
+                    data: formdata,
+                    processData: false, // 不处理数据( 必须有)
+                    contentType: false,  //不设置内容类型 ( 必须要)
+                    success: function (res) {
+                        if (res['msg']) {
+                            $('#error').html(res['msg'])
+                        } else {
+                            $('#error').html(res['succ'])
+
+                        }
+                         let htmlString = res['arr'].map(item => `<li>${item}</li>`).join(''); // 生成HTML字符串，每个item包裹在<li>标签内
+
+                        // 将生成的HTML字符串设置到#error1元素内
+                        $('#error1').html('<ul>' + htmlString + '</ul>'); // 注意添加<ul>来包裹<li>，保持良好的HTML结构
+                    }
+                })
+            });
+        });
+
+    </script>
+{% endblock %}
+
+

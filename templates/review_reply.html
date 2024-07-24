@@ -1,0 +1,114 @@
+{% extends "beas.html" %}
+
+{% block title %}
+    好评回复
+{% endblock %}
+{% block cssnr %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/updata_jg.css' %}">
+{% endblock %}
+
+{% block  centent %}
+    <div id="main">
+        <h2>好评回复</h2>
+        <h3><span class="error">记录一次以后永久自动，重复提交则是修改回复语句</span></h3>
+        {% csrf_token %}
+
+        <div>
+            <label for="poi_id"> 店铺id</label>
+            <input type="text" id="poi_id" value="{{ poi_id }}" onkeyup="filterList()">
+            <label for="mySelect" id>店铺选项</label>
+            <select id="mySelect" size="5">
+                {% for item in arr %}
+                    <option value="{{ item.1 }}" onclick="selectOption(this)">{{ item.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="cookie"> cookie</label>
+            <textarea id="cookie" name="cookie" rows="10" cols="30">{{ cookie }}</textarea>
+        </div>
+
+        <div>
+            <label for="content"> cookie</label>
+            <textarea id="content" name="content" rows="10" cols="30">
+ 蛋糕是生活中的仪式感，是岁月里的调味剂，感谢亲亲光临❥(
+    1.健康理念：
+    下单现做，当天现烤戚风蛋糕胚，保持松软的口感同时弹力十足持久不塌，采用新鲜水果🥭，丝滑牛奶奶油以及进口安佳动物奶油制作（不含反式脂肪）
+    2.专业理念：
+    每一位师傅都有8年以上裱花经验，尽最大的努力赋予它最真实且无添加的美
+    3.配送理念：
+    平台下单专人一对一配送，如遇问题第一时间为您排忧解难
+    小店集体员工祝您生日快乐，愿你无疾无忧、百岁安生、不离笑🎉
+            </textarea>
+        </div>
+
+        <div>
+            <button class="btn btn-default">上传更改</button>
+        </div>
+
+        <div id="error">
+
+        </div>
+        <div id="error1">
+
+        </div>
+
+    </div>
+{% endblock %}
+
+
+{% block jsnr %}
+    <script>
+        function filterList() {
+            var input = $('#poi_id').val().toLowerCase();
+            $('#mySelect option').each(function () {
+                var text = $(this).text().toLowerCase();
+                $(this).toggle(text.indexOf(input) > -1);
+            });
+        }
+
+        function selectOption(selectedOption) {
+            document.getElementById('poi_id').value = selectedOption.value;
+            // document.getElementById('mySelect').style.display = 'none';
+        }
+
+
+        $('.btn-default').click(function () {
+            alert('确定更改')
+            $('#error').html("正在修改，请稍后")
+            var poi_id = $('input[id=poi_id]').val();
+            var cookie = $('textarea[id=cookie]').val();
+            var content = $('textarea[id=content]').val();
+            var csrf = $('input[name=csrfmiddlewaretoken]').val();
+            var formdata = new FormData();
+
+            formdata.append('poi_id', poi_id);
+            formdata.append('cookie', cookie);
+            formdata.append('content', content);
+            formdata.append('csrfmiddlewaretoken', csrf);
+            $.ajax({
+                url: "/review_reply/{{num}}/{{ aa }}",
+                type: 'post',
+                data: formdata,
+                processData: false, // 不处理数据( 必须有)
+                contentType: false,  //不设置内容类型 ( 必须要)
+                success: function (res) {
+                    if (res['msg']) {
+                        $('#error').html(res['msg'])
+
+                    } else {
+                        $('#error').html(res['succ'])
+                        // 使用map函数创建包含每个项的HTML字符串，这里以列表项为例
+
+                    }
+                    let htmlString = res['arr'].map(item => `<li>${item}</li>`).join(''); // 生成HTML字符串，每个item包裹在<li>标签内
+
+                    // 将生成的HTML字符串设置到#error1元素内
+                    $('#error1').html('<ul>' + htmlString + '</ul>'); // 注意添加<ul>来包裹<li>，保持良好的HTML结构
+                }
+            })
+        })
+    </script>
+{% endblock %}

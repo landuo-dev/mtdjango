@@ -1,0 +1,67 @@
+{% extends "beas.html" %}
+
+{% block title %}
+    导出折扣excel
+{% endblock %}
+{% block cssnr %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/updata_jg.css' %}">
+{% endblock %}
+
+{% block  centent %}
+    <div id="main">
+        <h2>导出折扣excel</h2>
+        <div>
+            <label for="poi_id"> 店铺id</label>
+            <input type="text" id="poi_id">
+        </div>
+        {% csrf_token %}
+        <div>
+            <button class="btn btn-default">下载</button>
+        </div>
+
+        <div id="error">
+
+        </div>
+
+    </div>
+{% endblock %}
+
+
+{% block jsnr %}
+    <script>
+        $(document).ready(function () {
+            var fat = $('aside > ul > li').eq({{num}})
+            fat.find('ul > li').eq(2).addClass('check')
+            {#fat.find('').eq(0).addClass('check');#}
+
+            $(document).ready(function () {
+                // 使得带有.default-open类的.submenu元素展开
+                fat.find('ul').css('max-height', 'none'); // 如果你想设置具体高度，可以替换为 '500px'
+            });
+
+            $('.btn-default').click(function () {
+
+                alert('确定更改')
+                var poi_id = $('input[id=poi_id]').val();
+                var csrf = $('input[name=csrfmiddlewaretoken]').val();
+                var formdata = new FormData();
+
+                formdata.append('poi_id', poi_id);
+                formdata.append('csrfmiddlewaretoken', csrf);
+                $.ajax({
+                    url: "/download_excel/{{num}}",
+                    type: 'post',
+                    data: formdata,
+                    processData: false, // 不处理数据( 必须有)
+                    contentType: false,  //不设置内容类型 ( 必须要)
+                    success: function (data) {
+                        if (data.url) {
+                            window.open(data.url, '_blank'); // 在新窗口或标签页中打开URL
+                        }
+                    }
+                })
+            })
+        })
+    </script>
+{% endblock %}

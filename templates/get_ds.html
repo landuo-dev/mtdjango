@@ -1,0 +1,143 @@
+{% extends "beas.html" %}
+
+{% block title %}
+    查询定时任务
+{% endblock %}
+
+{% block cssnr %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/updata_jx.css' %}">
+    <link rel="stylesheet" href="{% static 'css/get_ds.css' %}">
+{% endblock %}
+
+
+{% block centent %}
+    <div id="main">
+        <h2>查询定时任务</h2>
+        {% csrf_token %}
+        <div>
+            <label for="poi_id"> 店铺id</label>
+            <input type="text" id="poi_id" value="{{ poi_id }}" onkeyup="filterList()">
+            <label for="mySelect" id>店铺选项</label>
+            <select id="mySelect" size="5">
+                {% for item in arr %}
+                    <option value="{{ item.1 }}" onclick="selectOption(this)">{{ item.0 }}</option>
+                {% endfor %}
+            </select>
+
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-default">提交</button>
+        </div>
+
+        <div id="list_ds">
+            <table class="custom-table">
+                <tr>
+                    <th class="custom-header">POI ID</th>
+                    <th class="custom-header">Date</th>
+                    <th class="custom-header">Type</th>
+                    <th class="custom-header">File Name</th>
+{#                    <th class="custom-header">Edit</th>#}
+                    <th class="custom-header">Delete</th>
+                </tr>
+                {% for doc in docs %}
+                    <tr class="custom-row">
+                        <td class="custom-cell">{{ doc.poi_id }}</td>
+                        <td class="custom-cell">{{ doc.date|date:"Y-m-d" }}</td>
+                        <td class="custom-cell">{{ doc.type_select }}</td>
+                        <td class="custom-cell">{{ doc.filename }}</td>
+{#                        <td class="custom-cell"><span class="edit-link" dsid="{{ doc.dsid }}">编辑</span></td>#}
+                        <td class="custom-cell"><span class="delete-link" dsid="{{ doc.dsid }}">删除</span></td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+        </div>
+
+        <div id="error">
+
+        </div>
+        <div id="error1">
+
+        </div>
+
+    </div>
+{% endblock %}
+
+
+{% block jsnr %}
+    <script>
+     function filterList() {
+            var input = $('#poi_id').val().toLowerCase();
+            $('#mySelect option').each(function () {
+                var text = $(this).text().toLowerCase();
+                $(this).toggle(text.indexOf(input) > -1);
+            });
+        }
+
+        function selectOption(selectedOption) {
+            document.getElementById('poi_id').value = selectedOption.value;
+            // document.getElementById('mySelect').style.display = 'none';
+        }
+
+
+        $('.btn-default').click(function () {
+            {#alert('确定更改')#}
+            {#$('#error').html("正在保存，请稍后")#}
+            $("#error1").empty();
+
+            var poi_id = $('input[id=poi_id]').val();
+            var csrf = $('input[name=csrfmiddlewaretoken]').val();
+            var formdata = new FormData();
+
+
+            formdata.append('poi_id', poi_id);
+
+            formdata.append('csrfmiddlewaretoken', csrf);
+            $.ajax({
+                url: "/get_ds/{{num}}/{{ aa }}",
+                type: 'post',
+                data: formdata,
+                processData: false, // 不处理数据( 必须有)
+                contentType: false,  //不设置内容类型 ( 必须要)
+                success: function (res) {
+                    if (res['success']) {
+                        {#$('#error').html("保存成功");#}
+                        location.reload();
+                    } else {
+                        {#$('#error').html(res['msg'])#}
+                    }
+
+                }
+            })
+        })
+        $('.edit-link').click(function () {
+            const dsid = $(this).attr('dsid');
+            alert('编辑');
+        })
+
+        $('.delete-link').click(function () {
+            $("#error1").empty();
+
+            const dsid = $(this).attr('dsid');
+            const csrf = $('input[name=csrfmiddlewaretoken]').val();
+
+            $.ajax({
+                url: "/delds/{{ num }}",
+                type: 'post',
+                data: {
+                    "dsid": dsid,
+                    "csrfmiddlewaretoken": csrf
+                },
+                success: function (res){
+                    console.log('成功')
+                    location.reload();
+                }
+            })
+            alert('删除')
+        })
+    </script>
+{% endblock %}
+
+

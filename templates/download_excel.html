@@ -1,0 +1,110 @@
+{% extends "beas.html" %}
+
+{% block title %}
+    导出折扣excel
+{% endblock %}
+{% block cssnr %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/updata_jg.css' %}">
+{% endblock %}
+
+{% block  centent %}
+    <div id="main">
+        <h2>导出折扣excel</h2>
+        <div>
+            <label for="poi_id"> 店铺id</label>
+            <input type="text" id="poi_id" value="{{ poi_id }}" onkeyup="filterList()">
+            <label for="mySelect" id>店铺选项</label>
+            <select id="mySelect" size="5">
+                {% for item in arr %}
+                    <option value="{{ item.1 }}" onclick="selectOption(this)">{{ item.0 }}</option>
+                {% endfor %}
+            </select>
+
+        </div>
+        {% csrf_token %}
+
+        <div class="button-group">
+           <button class="btn btn-default">下载折扣表</button>
+            <button class="btn btn-default_yj">下载原价表</button>
+        </div>
+
+        <div id="error">
+
+        </div>
+        <div id="error1">
+
+        </div>
+
+    </div>
+{% endblock %}
+
+
+{% block jsnr %}
+    <script>
+     function filterList() {
+            var input = $('#poi_id').val().toLowerCase();
+            $('#mySelect option').each(function () {
+                var text = $(this).text().toLowerCase();
+                $(this).toggle(text.indexOf(input) > -1);
+            });
+        }
+
+        function selectOption(selectedOption) {
+            document.getElementById('poi_id').value = selectedOption.value;
+            // document.getElementById('mySelect').style.display = 'none';
+        }
+
+        $(document).ready(function () {
+
+            $('.btn-default').click(function () {
+                $("#error1").empty();
+                alert('确定更改')
+                var poi_id = $('input[id=poi_id]').val();
+                var is_new = 0;
+                var csrf = $('input[name=csrfmiddlewaretoken]').val();
+                var formdata = new FormData();
+
+                formdata.append('poi_id', poi_id);
+                formdata.append('is_new', is_new);
+                formdata.append('csrfmiddlewaretoken', csrf);
+                $.ajax({
+                    url: "/download_excel/{{num}}/{{ aa }}",
+                    type: 'post',
+                    data: formdata,
+                    processData: false, // 不处理数据( 必须有)
+                    contentType: false,  //不设置内容类型 ( 必须要)
+                    success: function (data) {
+                        if (data.url) {
+                            window.open(data.url, '_blank'); // 在新窗口或标签页中打开URL
+                        }
+                    }
+                })
+            })
+
+            $('.btn-default_yj').click(function () {
+                $("#error1").empty();
+                alert('确定更改')
+                var poi_id = $('input[id=poi_id]').val();
+                var is_new = 1;
+                var csrf = $('input[name=csrfmiddlewaretoken]').val();
+                var formdata = new FormData();
+                formdata.append('poi_id', poi_id);
+                formdata.append('is_new', is_new);
+                formdata.append('csrfmiddlewaretoken', csrf);
+                $.ajax({
+                    url: "/download_excel/{{num}}/{{ aa }}",
+                    type: 'post',
+                    data: formdata,
+                    processData: false, // 不处理数据( 必须有)
+                    contentType: false,  //不设置内容类型 ( 必须要)
+                    success: function (data) {
+                        if (data.url) {
+                            window.open(data.url, '_blank'); // 在新窗口或标签页中打开URL
+                        }
+                    }
+                })
+            })
+        })
+    </script>
+{% endblock %}

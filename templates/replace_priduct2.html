@@ -1,0 +1,129 @@
+{% extends "beas.html" %}
+
+{% block title %}
+    月售替换
+{% endblock %}
+{% block cssnr %}
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/updata_jg.css' %}">
+{% endblock %}
+
+{% block  centent %}
+    <div id="main">
+        {% csrf_token %}
+        <h2>月售替换</h2>
+        <h3><span class="error"> 所有 * 号都是必填项</span></h3>
+        <div>
+            <label for="poi_id"> 店铺id <span class="error">*</span></label>
+            <input type="text" id="poi_id" value="{{ poi_id }}" onkeyup="filterList()">
+            <label for="mySelect" id>店铺选项</label>
+            <select id="mySelect" size="5">
+                {% for item in arr %}
+                    <option value="{{ item.1 }}" onclick="selectOption(this)">{{ item.0 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="cookie"> cookie <span class="error">*</span></label>
+            <textarea id="cookie" name="cookie" rows="10" cols="30">{{ cookie }}</textarea>
+        </div>
+
+        <div>
+            <label for="pro_new">产品名1 <span class="error">*</span></label>
+            <input type="text" id="pro_new">
+        </div>
+
+        <div>
+            <label for="pro_new_act">折扣原名1 <span class="error">*</span></label>
+            <input type="text" id="pro_new_act">
+        </div>
+
+        <div>
+            <label for="pro_old">产品名2 <span class="error">*</span></label>
+            <input type="text" id="pro_old">
+        </div>
+
+        <div>
+            <label for="pro_old_act">折扣原名2 <span class="error">*</span></label>
+            <input type="text" id="pro_old_act">
+        </div>
+
+        <div>
+            <button class="btn btn-default">上传更改</button>
+        </div>
+
+        <div id="error">
+
+        </div>
+        <div id="error1">
+
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block jsnr %}
+    <script>
+
+        function filterList() {
+            var input = $('#poi_id').val().toLowerCase();
+            $('#mySelect option').each(function () {
+                var text = $(this).text().toLowerCase();
+                $(this).toggle(text.indexOf(input) > -1);
+            });
+        }
+
+        function selectOption(selectedOption) {
+            document.getElementById('poi_id').value = selectedOption.value;
+            // document.getElementById('mySelect').style.display = 'none';
+        }
+
+
+        $('.btn-default').click(function () {
+            alert('确定更改')
+            $('#error').html("正在修改，请稍后")
+            var poi_id = $('input[id=poi_id]').val();
+            var cookie = $('textarea[id=cookie]').val();
+            var pro_new = $('input[id=pro_new]').val();
+            var pro_old = $('input[id=pro_old]').val();
+            var pro_new_act = $('input[id=pro_new_act]').val();
+            var pro_old_act = $('input[id=pro_old_act]').val();
+            var dis_new = $('textarea[id=dis_new]').val();
+            var dis_old = $('textarea[id=dis_old]').val();
+            var csrf = $('input[name=csrfmiddlewaretoken]').val();
+            var formdata = new FormData();
+
+
+            formdata.append('poi_id', poi_id);
+            formdata.append('pro_new', pro_new);
+            formdata.append('pro_old', pro_old);
+            formdata.append('pro_new_act', pro_new_act);
+            formdata.append('pro_old_act', pro_old_act);
+            formdata.append('dis_new', dis_new);
+            formdata.append('dis_old', dis_old);
+            formdata.append('cookie', cookie);
+            formdata.append('csrfmiddlewaretoken', csrf);
+            $.ajax({
+                url: "/replace_priduct1/{{num}}/{{ aa }}",
+                type: 'post',
+                data: formdata,
+                processData: false, // 不处理数据( 必须有)
+                contentType: false,  //不设置内容类型 ( 必须要)
+                success: function (res) {
+                    if (res['msg']) {
+                        $('#error').html(res['msg'])
+
+                    } else {
+                        $('#error').html(res['succ'])
+
+                    }
+                    let htmlString = res['list'].map(item => `<li>${item}</li>`).join(''); // 生成HTML字符串，每个item包裹在<li>标签内
+
+                    // 将生成的HTML字符串设置到#error1元素内
+                    $('#error1').html('<ul>' + htmlString + '</ul>'); // 注意添加<ul>来包裹<li>，保持良好的HTML结构
+                }
+            })
+        })
+    </script>
+{% endblock %}
