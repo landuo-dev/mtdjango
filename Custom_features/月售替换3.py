@@ -115,7 +115,7 @@ def get_actdata(poiId, tagId, startTime, endTime, tagname, cookie):
 
 
 def updata_data(collection, act_name, name, spec, actid, errMsg, spuId, skuId, price, tagName):
-    spec = spec.split('(')[0]
+    spec = spec.rsplit('(')[0]
     # act_name = re.sub('@', '', act_name)
     count1 = collection.count_documents({"name": act_name})
     if count1 == 1:
@@ -232,7 +232,7 @@ def set_post_data1(name, poi_id):
 
 
 def getdata(i, poi_id):
-    spec = re.sub(' ', '', i['food']['spec'].split('(')[0])
+    spec = re.sub(' ', '', i['food']['spec'].rsplit('(')[0])
     dicts = {
         'weeksTime': i['weeksTime'],
         'period': i['period'],
@@ -256,7 +256,7 @@ def save_database(poi_id, data, collection):
     documents = []
     for i in lists:
         dicts = getdata(i, poi_id)
-        spec = re.sub(' ', '', i['food']['spec'].split('(')[0])
+        spec = re.sub(' ', '', i['food']['spec'].rsplit('(')[0])
         name = re.sub('@', '', i['food']['wmSkuName'])
         # doc = collection.find_one({"name": name, 'spec': spec})
         # print(i['food']['wmSkuName'][:-1], spec)
@@ -400,10 +400,9 @@ def yichangtianjia(collect_act, name, cookie, tem=1):
 def rep_pro(poi_id, df, cookie, result):
     # result = set()
     client = MongoClient('mongodb://localhost:27017/')
-    db_pro = client['test']
-    db_act = client['actproduct']
-    collect_pro = db_pro[poi_id]
-    collect_act = db_act[poi_id]
+    db = client[poi_id]
+    collect_pro = db["prodata"]
+    collect_act = db["proact"]
 
     for i, data in df.iterrows():
         name_x = data.iloc[0]
@@ -510,10 +509,13 @@ if __name__ == '__main__':
 
     '''
 
-    cookie = "_lxsdk_cuid=18f141d9eb9c8-0033f3d2dbef57-26001d51-1fa400-18f141d9eb9c8; device_uuid=!24ae408e-dd29-4dd9-b274-43b9e9fe5091; uuid_update=true; pushToken=0I8JEqPcZddF4VYTy5hpYUJJRosvU8v-pSKS7LSoDJsY*; WEBDFPID=vzz7x78zu94w56v90z443u5zwu3704y881u809z0wxu97958z146219x-2029472078615-1714112078615UCKQYCCfd79fef3d01d5e9aadc18ccd4d0c95073581; iuuid=7ACAF630E8FA1E1C9247877A8297E026FCE715188DBAAD0E9A0B80DC655841F1; wm_order_channel=sjzxpc; utm_source=60376; _lxsdk=7ACAF630E8FA1E1C9247877A8297E026FCE715188DBAAD0E9A0B80DC655841F1; mtcdn=K; _ga=GA1.3.306699777.1714902768; _ga_NMY341SNCF=GS1.3.1714902768.1.1.1714902798.0.0.0; acctId=97786666; token=0UqAYO5JT6rTEdF83z9E-a3Jqm9KQRoF1suJrZXg63L4*; brandId=-1; isOfflineSelfOpen=0; city_id=0; isChain=1; existBrandPoi=true; ignore_set_router_proxy=true; region_id=; region_version=0; newCategory=false; bsid=iocutxFCt_3FzYbUEtTfQy0lSdmvcSn9C5MbocWBKTCOl4tXjiWU4XYS0RBwTlAi461unnfMa5XXCOAutD6FlQ; city_location_id=0; location_id=0; cityId=440300; provinceId=440000; logistics_support=; _lx_utm=utm_source%3D60376; au_trace_key_net=default; openh5_uuid=7ACAF630E8FA1E1C9247877A8297E026FCE715188DBAAD0E9A0B80DC655841F1; isIframe=false; setPrivacyTime=6_20240507; wmPoiId=15044469; wmPoiName=%E7%83%98%E6%89%98%E5%B0%BC%C2%B7Toni%E7%A7%81%E4%BA%BA%E5%AE%9A%E5%88%B6%E7%BD%91%E7%BA%A2%E8%9B%8B%E7%B3%95%EF%BC%88%E6%B5%B7%E4%BA%AE%E5%BA%97%EF%BC%89; wpush_server_url=wss://wpush.meituan.com; shopCategory=food; set_info=%7B%22wmPoiId%22%3A15044469%2C%22ignoreSetRouterProxy%22%3Atrue%7D; JSESSIONID=1s1gaenpm1zucqxvondow6bmv; logan_session_token=8e0mpsvvz3ap0owp1z8r; _lxsdk_s=18f551fe65c-8f4-646-13c%7C97786666%7C2535"
+    poi_id = '11199362'
+    cookie = "wm_order_channel=default; swim_line=default; utm_source=; WEBDFPID=zz364z653321562y0226u035wy124w4780892u35zy997958z546xy50-2037775463940-1722415462888CKWCUAMfd79fef3d01d5e9aadc18ccd4d0c95079811; iuuid=4B73777D2D5F22EC75E9DC73ECA620FEC9647DB7C4ECAB2B84ECF45F4F93EBBF; _lxsdk_cuid=1910b815d0dc8-07b8a26ad21e4f-4c657b58-1fa400-1910b815d0dc8; _lxsdk=4B73777D2D5F22EC75E9DC73ECA620FEC9647DB7C4ECAB2B84ECF45F4F93EBBF; device_uuid=!23251eaf-a663-4c28-8869-62b74ec5ea7f; uuid_update=true; acctId=97786666; token=0ok4g26IuIQK8gK8v0p-RC460MfVBD_KZxkogAHBL5t8*; city_id=0; isChain=1; ignore_set_router_proxy=true; region_id=; region_version=0; bsid=wICMFP3BXUb1fLKXE9A5cSmcdd1LCjX_3JN17GR3BMcMxtAjBzV4frYe91f7FP0Wn06CnQsYSYiiFD59gFqgYw; city_location_id=0; location_id=0; has_not_waimai_poi=0; onlyForDaoDianAcct=0; cityId=440300; provinceId=440000; pushToken=0ok4g26IuIQK8gK8v0p-RC460MfVBD_KZxkogAHBL5t8*; isOfflineSelfOpen=0; wmPoiId=11199362; wmPoiName=SweetCake%E7%BD%91%E7%BA%A2%E5%88%9B%E6%84%8F%E8%9B%8B%E7%B3%95%E5%AE%9A%E5%88%B6%EF%BC%88%E4%B8%89%E6%9E%97%E5%BA%97%EF%BC%89; logistics_support=; set_info_single=%7B%22regionIdForSingle%22%3A%221000310100%22%2C%22regionVersionForSingle%22%3A1615358295%7D; shopCategory=food; wpush_server_url=wss://wpush.meituan.com; set_info=%7B%22wmPoiId%22%3A11199362%2C%22ignoreSetRouterProxy%22%3Atrue%7D; logan_session_token=sann9n1s4mfrjl4kzdej; _lxsdk_s=1914f757e87-da2-53a-289%7C97786666%7C254"
 
-    rep_pro('15044469', '【母亲节限定】缤纷鲜果生日蛋糕🍓', '点亮右上↗🌟关注送金色数字蜡烛',
-            "【母亲节限定】缤纷鲜果生日蛋糕🍓", '点亮右上↗🌟关注送金色数字蜡烛', '', '', cookie)
+    df = pd.read_excel(r'C:\Users\Admin\Downloads\replaceTemp (5).xlsx')
+    result = set()
+    rep_pro(poi_id, df, cookie, set())
+    print(result)
 
 """
 不止是今天，每一天，💗

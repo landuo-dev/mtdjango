@@ -1,5 +1,6 @@
 # utf - 8
 import asyncio
+import random
 import time
 import traceback
 
@@ -12,6 +13,7 @@ from pymongo import MongoClient
 from requests.exceptions import InvalidHeader
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from pymongo import MongoClient
 
 
 class JX():
@@ -37,15 +39,59 @@ class JX():
         }
         self.client = MongoClient('mongodb://localhost:27017/')
         # 选择数据库和集合（相当于 SQL 中的表）
-        self.db = self.client['test']
+        self.db = self.client[self.poi_id]
         # collection = db[str(poi_id)]
-        self.collection = self.db[self.poi_id]
+        self.collection = self.db["prodata"]
         self.session = requests.session()
         self.session.headers = self.headers
+        # res = requests.get(
+        #     "http://www.zdopen.com/PrivateProxy/GetIP/?api=202408101456362844&akey=eeed4049479ed4f3&count=8&adr=%E5%B9%BF%E4%B8%9C&fitter=1&timespan=15&tunnel=1&type=3").json()
+        # self.proxy_pool = [f"http://{i['ip']}:{i['port']}" for i in res['data']['proxy_list']]
+        # print(self.proxy_pool)
+        self.proxy_pool = [
+            'http://159.226.227.118:80',
+            'http://42.63.65.49:80',
+            'http://182.34.18.44:8089',
+            'http://94.74.80.88:20201',
+            'http://36.6.145.58:8089',
+            'https://113.223.213.93:8089',
+            'http://60.214.128.150:9091',
+            'https://114.232.109.124:8089',
+            'https://183.164.243.12:8089',
+            'https://36.6.144.216:8089',
+            'http://223.111.245.251:80',
+            'https://117.69.236.15:8089',
+            'https://117.69.190.143:41122',
+            'http://117.57.93.37:8089',
+            'https://36.6.145.202:8089',
+            'https://113.223.215.45:8089',
+            'https://123.182.58.55:8089',
+            'http://110.80.140.213:443',
+            'http://47.93.121.200:80',
+            'http://123.13.218.68:9002',
+            'http://111.224.212.154:8089',
+            'http://123.57.172.180:18080',
+            'http://61.129.2.212:8080',
+            'http://111.177.63.86:8888',
+            'http://47.102.111.107:8080',
+            'http://118.31.1.154:80',
+            'http://111.225.152.22:8089',
+            'http://111.172.239.145:3128',
+            'http://120.25.1.15:7890',
+            'http://115.223.11.212:50000',
+            'http://39.104.87.157:82',
+            'http://47.93.249.121:8118',
+            'http://113.219.247.226:30000',
+            'https://111.172.239.145:3128',
+            'httpss://114.236.93.203:22486',
+
+            # # 更多代理...
+        ]
+        self.max_num = 10
 
     def while_fun(self, func, *args, **kwargs):
         num = 0
-        while num < 3:
+        while self.max_num > num:
             try:
                 res = func(*args, **kwargs)
                 # print(res.json())
@@ -62,6 +108,9 @@ class JX():
         return 0
 
     # 设置夹心入库
+
+    def get_random_proxy(self):
+        return random.choice(self.proxy_pool)
 
     def get_tag(self):
         data = {
@@ -124,16 +173,19 @@ class JX():
         return dicts
 
     def get_product_v2(self):
+        proxy = self.get_random_proxy()
         num = 0
-        while 3 > num:
+        while self.max_num > num:
             try:
                 response = self.session.get(
                     'https://e.waimai.meituan.com/reuse/product/food/r/editView/v2',
+                    # proxies={'http': proxy, 'https': proxy},
                 )
                 if response.status_code == 200:
                     break
             except Exception as e:
                 print(e)
+                time.sleep(5)
                 num += 1
         if num == 3:
             return None
@@ -202,6 +254,7 @@ class JX():
             self.session.params = params
 
             dis2 = self.get_product_v2()
+
             dis1.update(dis2)
 
             if self.collection.find_one({"name": i['name']}):
@@ -241,7 +294,7 @@ class JX():
                 }
                 num = 0
                 # response = session.post(url, data=data)
-                while 3 > num:
+                while self.max_num > num:
                     try:
                         response = self.while_fun(self.session.post, url=url, data=data)
                         if response.status_code == 200:
@@ -251,13 +304,13 @@ class JX():
                         else:
                             print('请求失败', response.json())
                             num += 1
-                            time.sleep(3)
+                            time.sleep(5)
                             continue
 
                     except Exception as e:
                         print(e)
                         num += 1
-                        time.sleep(3)
+                        time.sleep(5)
                         continue
 
     # 结束夹心入库
@@ -617,9 +670,16 @@ class JX():
                 {"setTraceId": True, "setTraceType": True, "traceId": "897162237673668406", "traceType": 100002}]}
         return bb, updatadatabase
 
-    async def fetch_data(self, session, url, post_data):
+    async def fetch_data(self, session, url, post_data, as_requests=1):
         try:
-            async with session.post(url, headers=self.headers, data=post_data) as response:
+            if as_requests:
+                request_options = {"headers": self.headers, "data": post_data,
+                                   "timeout": aiohttp.ClientTimeout(total=5),
+                                   "proxy": self.get_random_proxy()}
+            else:
+                request_options = {"headers": self.headers, "data": post_data}
+            async with session.post(url=url, **request_options) as response:
+
                 if response.status != 200:
                     raise Exception(f"HTTP Error {response.status}")
                 json_data = await response.json()
@@ -629,13 +689,71 @@ class JX():
                 # print(json_data)
                 return None
         except Exception as e:
+            print(e)
             return None
+
+    async def Recover(self, back_poi_id, as_requests):
+        url = 'https://e.waimai.meituan.com/reuse/product/food/w/save'
+        result = set()
+        # 创建 MongoDB 客户端
+        client = MongoClient('mongodb://localhost:27017/')
+        # 选择数据库和集合（相当于 SQL 中的表）
+        test = client[self.poi_id]
+        back = client['back_up_jx']
+        back_collection = back[str(back_poi_id)]
+        collection = test["prodata"]
+
+        session = aiohttp.ClientSession()
+        err = 0
+        for doc in collection.find():
+            try:
+                name = doc['name']
+                document = collection.find_one({"name": name})
+                back_document = back_collection.find_one({"name": name})
+                if not document:
+                    print("该店铺没有商品", name)
+                    result.add(f"该店铺没有商品 {name}")
+                    continue
+
+                post_data = self.set_post_data_yj(back_document, back_document['description'], document['attrList01'],
+                                                  chenCheng='', name=document['name'], attribute=document['attrList02'])
+
+                num = 0
+                while 3 > num:
+                    json_data = await self.fetch_data(session, url, post_data, as_requests)
+                    if json_data is None:
+                        err = 0
+                        break  # 如果请求成功或不需要重试，则跳出循环
+                    if json_data['msg'] == "参加活动商品无法修改，请先将商品下掉活动":
+                        print(name, json_data['msg'])
+                        result.add(f"{json_data['msg']} -->{name}")
+                        err = 0
+                        break
+                    print(json_data['msg'], name)
+
+                    num += 1
+                    err += 1
+                    result.add(f"{json_data['msg']} -->{name}")
+                    if err >= 30:
+                        await session.close()
+                        return "0"
+                    await asyncio.sleep(1)
+
+
+            except Exception as e:
+                # traceback.print_exc()
+                print(doc['name'])
+                result.add(doc['name'])
+                print(e)
+        await session.close()
+
+        return result
 
     async def updata01(self, df, result, mode):
         url = 'https://e.waimai.meituan.com/reuse/product/food/w/save'
         # result = set()
-        if not self.poi_id in self.db.list_collection_names():
-            return '该店没入库'
+        if not "prodata" in self.db.list_collection_names():
+            return ValueError('该店没入库')
         session = aiohttp.ClientSession()
         err = 0
         names = set()
@@ -656,7 +774,9 @@ class JX():
                     result.add(data.iloc[2])
                     continue
                 document = self.collection.find_one({"name": name})
-                description = data.iloc[4] if not pd.isna(data.iloc[4]) else document.get('description', '')
+                description = str(data.iloc[4]) if not pd.isna(data.iloc[4]) else document.get('description', '')
+                if description == "-1":
+                    description = ""
                 if not document:
                     print(i)
                     print("该店铺没有商品", name)
@@ -674,13 +794,13 @@ class JX():
                 }
 
                 num = 0
-                while 3 > num:
-                    json_data = await self.fetch_data(session, url, post_data)
+                while self.max_num > num:
+                    json_data = await self.fetch_data(session, url, post_data, 0)
                     if json_data is None:
-                        self.collection.update_one({"name": name}, {"$set": {"attrList02": updatadatabase}})
+                        # self.collection.update_one({"name": name}, {"$set": {"attrList02": updatadatabase}})
                         err = 0
                         break  # 如果请求成功或不需要重试，则跳出循环
-                    if json_data['msg'] == "参加活动商品无法修改，请先将商品下掉活动":
+                    if json_data['msg'] == "参加活动商品无法修改，请先将商品下掉活动" or "图片来源异常" in json_data['msg']:
                         print(name, json_data['msg'])
                         result.add(f"{json_data['msg']} -->{name}")
                         err = 0
@@ -693,7 +813,8 @@ class JX():
 
                     if err >= 30:
                         await session.close()
-                        return "0"
+                        raise Exception("请求错误次数过多")
+
                     await asyncio.sleep(1)
 
             except Exception as e:
@@ -709,9 +830,12 @@ class JX():
         # return result
 
     def updata_jx(self, df, result, mode=1):
-        asyncio.run(self.updata01(df, result, mode))
+        res = asyncio.run(self.updata01(df, result, mode))
 
-    # 结束更新夹心
+    def run_Recover(self, back_poi_id, as_requests=1):
+        asyncio.run(self.Recover(back_poi_id, as_requests))
+
+        # 结束更新夹心
 
     # 原价菜单，更改菜单原价
     def yx_attrbute01(self, attrList02, attributes):
@@ -766,7 +890,7 @@ class JX():
     def set_attribute03(self, attrList01, attrList02, chenCheng=''):
         attributes = []
         if not len(attrList01):
-            return '错误'
+            raise ValueError('错误')
         dic1 = {}
         for index, i in enumerate(attrList01):
             if i['price'] != 0:
@@ -845,7 +969,7 @@ class JX():
                 dic1['份量'].append(val[0])
 
             attributes.append(
-                {"name": '份量', "name_id": 0, "price": eval(val[1]), "value": val[0] + chenCheng, "value_id": 0,
+                {"name": '份量', "name_id": 0, "price": eval(val[1]), "value": val[0].strip() + chenCheng, "value_id": 0,
                  "no": 0,
                  "mode": 2,
                  "weight": weight, "weightUnit": weightUnit, "sell_status": 0, "value_sequence": index, "unitType": 1
@@ -890,13 +1014,11 @@ class JX():
 
         if not doc:
             porid = document['proid']
-            picurl = document['picUrl']
-            defaultPicUrl = document['defaultPicUrl']
         else:
             porid = doc['proid']
-            picurl = doc['picUrl']
-            defaultPicUrl = doc['defaultPicUrl']
 
+        picurl = document['picUrl']
+        defaultPicUrl = document['defaultPicUrl']
         if not name:
             name = document['name']
             if not attribute:
@@ -1092,6 +1214,7 @@ class JX():
               "properties_values": properties_values,
               "labelValues": [{"sequence": 1, "value": ""}, {"sequence": 2, "value": ""}], "suggestTraceInfoList": [
                 {"setTraceId": True, "setTraceType": True, "traceId": "897162237673668406", "traceType": 100002}]}
+        # print(bb)
         wmFoodVoJson02 = [bb]
         post_data = {
             'wmPoiId': self.poi_id,
@@ -1108,7 +1231,7 @@ class JX():
         try:
             post_data = self.set_post_data_yj(document, description, sr1, '', boxPrice, min_order_count, attribute)
             num = 0
-            while 3 > num:
+            while self.max_num > num:
                 try:
                     response = requests.post(url, headers=self.headers, data=post_data, timeout=5)
                     json_data = response.json()
@@ -1128,7 +1251,7 @@ class JX():
                 except requests.exceptions.ReadTimeout:
                     print("请求超时，请手动修改", document['name'])
                     num += 1
-                    time.sleep(1)
+                    time.sleep(5)
                 except Exception as e:
                     print(e)
                     num += 1
@@ -1151,21 +1274,23 @@ class JX():
         for key, val in df.iterrows():
             dic1[val.iloc[2]] = dic1.get(val.iloc[2], '') + str(val.iloc[3]) + "=" + str(val.iloc[4]) + "#"
 
-        df_unique = df.drop_duplicates(subset='商品名字', keep='first')
+        df_unique = df.drop_duplicates(subset='商品名称', keep='first')
         # print(dic1['提拉米苏蛋糕'])
         for key, val in df_unique.iterrows():
             try:
-                name = val.iloc[2]
+                name = val['商品名称']
                 spce = dic1[name]
                 # spce = val.iloc[3]
-                ladder_num = str(val.iloc[4])
+                ladder_num = str(val.iloc[5])
                 document = self.collection.find_one({"name": name})
+                print(spce)
                 print("ladder_num", len(ladder_num))
                 if document:
                     description = val['描述'] if not pd.isna(val['描述']) else document['description']
                 else:
-                    print('该店铺没有商品')
-                    raise ValueError('该店铺没有商品')
+                    print(f'该店铺没有商品{name}, {spce}')
+                    continue
+                    # raise ValueError('该店铺没有商品')
                 # print(val['描述'])
 
                 if len(ladder_num) == 1:
@@ -1299,7 +1424,7 @@ class JX():
         url = 'https://waimaieapp.meituan.com/proxy-gw/promotion/wmapi/activity/common/disable'
 
         num = 0
-        while 3 > num:
+        while self.max_num > num:
             try:
                 response = requests.post(url, headers=self.headers, data=data, params=query_params)
                 print(response.text)
@@ -1331,7 +1456,9 @@ class JX():
             else:
                 post_data = self.set_post_data_yj(document, document['description'], document['attrList01'],
                                                   '.', doc=doc, name=name, attribute=document['attrList02'])
-            while 3 > num:
+
+            # print(post_data)
+            while self.max_num > num:
                 try:
                     response = requests.post(url, headers=self.headers, data=post_data, timeout=5)
                     json_data = response.json()
@@ -1357,7 +1484,7 @@ class JX():
                 except requests.exceptions.ReadTimeout:
                     print("请求超时，请手动修改", name)
                     num += 1
-                    time.sleep(1)
+                    time.sleep(5)
                 except Exception as e:
                     print(e)
                     num += 1
@@ -1426,7 +1553,7 @@ class JX():
 
         url = "https://waimaieapp.meituan.com/proxy-gw/promotion/wmapi/activity/product/query/queryProductByWmPoiIdAndTagId?weeksTime=1,2,3,4,5,6,7&period=00:00-23:59"
         num = 0
-        while 3 > num:
+        while self.max_num > num:
             try:
                 response = requests.get(url, params=quer_data, headers=self.headers, timeout=5)
                 if response.status_code == 200:
@@ -1540,7 +1667,7 @@ class JX():
                                             document['orderLimit'])
 
         num = 0
-        while 3 > num:
+        while self.max_num > num:
             try:
                 response = requests.post(url, params=query_params, json=post_data, headers=headers2)
                 json_data = response.json()
@@ -1586,7 +1713,7 @@ class JX():
         }
 
         num = 0
-        while 3 > num:
+        while self.max_num > num:
             try:
                 response = requests.post(url, headers=self.headers, data=self.set_post_data(name),
                                          params=query_params, timeout=4)
@@ -1600,12 +1727,12 @@ class JX():
                 else:
                     print(f'连接失败， 正在重新尝试第{num}次', name)
                     num += 1
-                    time.sleep(1)
+                    time.sleep(5)
             except Exception as e:
                 print(e, name)
                 print(f'连接失败， 正在重新尝试第{num}次')
                 num += 1
-                time.sleep(1)
+                time.sleep(5)
 
     def yichangtianjia(self, collect_act, porid, tem=1):
         flog = 0
@@ -1620,8 +1747,7 @@ class JX():
         return flog
 
     def replace_product(self, name_x, name_y, result):
-        db_act = self.client['actproduct']
-        collect_act = db_act[self.poi_id]
+        collect_act = self.db["proact"]
 
         doc_x = self.collection.find_one({'name': name_x})
         doc_y = self.collection.find_one({'name': name_y})
@@ -1648,16 +1774,17 @@ class JX():
         if actid_y:
             self.delete_product(collect_act, actid_y)
 
-        time.sleep(1)
+        time.sleep(5)
         flog1 = 0
         flog2 = 0
 
         # flog1 += save(collect_pro, doc_x, doc_x, poi_id, name_x[:-2] + '@', cookie, result)
-        flog1 += self.save_thxl(doc_x, doc_y, name_x[:-2] + '@', result)
+
+        flog1 += self.save_thxl(doc_x, doc_x, name_x[:-2] + '@', result)
         print(name_x[:-2] + "@ 完成")
-        flog1 += self.save_thxl(doc_y, doc_x, name_x, result)
+        flog1 += self.save_thxl(doc_x, doc_y, name_x, result)
         print(f"{name_y}----->{name_x} 完成")
-        flog2 += self.save_thxl(doc_x, doc_y, name_y, result)
+        flog2 += self.save_thxl(doc_y, doc_x, name_y, result)
         print(f"{name_x}----->{name_y} 完成")
         if flog1:
             print("报错还原")
@@ -1716,7 +1843,7 @@ class JX():
             flog_y = self.yichangtianjia(collect_act, porid_y, 0)
             self.save_thxl(doc_y, doc_y, name_y, result)
 
-        time.sleep(1)
+        time.sleep(5)
         self.updata_add(collect_act, porid_x)
         self.updata_add(collect_act, porid_y)
 
@@ -1725,6 +1852,114 @@ class JX():
         return result
 
     # 结束设置销量替换
+
+    #  替换失败还原
+
+    def replaceFailedRevert(self, name_x, result):
+        collect_act = self.db["proact"]
+
+        doc_x = self.collection.find_one({'name': name_x})
+        if  not doc_x:
+            print('店铺没有商品')
+            result.add('店铺没有商品')
+            raise ValueError('店铺没有商品')
+
+        porid_x = doc_x['proid']
+
+
+        self.save_act_data(collect_act)
+
+        actid_x = self.del_actproduct(collect_act, porid_x)
+        actid_y = self.del_actproduct(collect_act, porid_y)
+
+        print(actid_x)
+        print(actid_y)
+        if actid_x:
+            self.delete_product(collect_act, actid_x)
+        if actid_y:
+            self.delete_product(collect_act, actid_y)
+
+        time.sleep(5)
+        flog1 = 0
+        flog2 = 0
+
+        # flog1 += save(collect_pro, doc_x, doc_x, poi_id, name_x[:-2] + '@', cookie, result)
+
+        flog1 += self.save_thxl(doc_x, doc_x, name_x[:-2] + '@', result)
+        print(name_x[:-2] + "@ 完成")
+        flog1 += self.save_thxl(doc_x, doc_y, name_x, result)
+        print(f"{name_y}----->{name_x} 完成")
+        flog2 += self.save_thxl(doc_y, doc_x, name_y, result)
+        print(f"{name_x}----->{name_y} 完成")
+        if flog1:
+            print("报错还原")
+            result.add(f'请检查“{name_x}”的折扣名有没有错')
+            self.save_thxl(doc_x, doc_x, name_x, result)
+        elif flog2:
+            print("报错还原")
+            result.add(f'请检查“{name_y}”的折扣名有没有错')
+            self.save_thxl(doc_y, doc_y, name_y, result)
+            self.save_thxl(doc_x, doc_x, name_x, result)
+        else:
+            self.collection.update_one({"name": name_x}, {"$set": {
+                "proid": doc_y['proid']
+            }})
+            self.collection.update_one({"name": name_y}, {"$set": {
+                "proid": doc_x['proid']
+            }})
+
+            actdocx = [i for i in collect_act.find({"spuId": porid_x})]
+            actdocy = [i for i in collect_act.find({"spuId": porid_y})]
+
+            for doc in actdocx:
+                collect_act.update_one({"name": doc['name'], "spec": doc['spec']}, {
+                    "$set": {"spuId": porid_y, "orderLimit": doc['orderLimit'], "daylimit": doc['daylimit']}})
+            for doc in actdocy:
+                collect_act.update_one({"name": doc['name'], "spec": doc['spec']}, {
+                    "$set": {"spuId": porid_x, "orderLimit": doc['orderLimit'], "daylimit": doc['daylimit']}})
+
+        # time.sleep(4)
+        doc_x = self.collection.find_one({'name': name_x})
+        doc_y = self.collection.find_one({'name': name_y})
+
+        porid_x = doc_x['proid']
+        porid_y = doc_y['proid']
+
+        self.add_updata(doc_x, collect_act, name_x, porid_x)
+        self.add_updata(doc_y, collect_act, name_y, porid_y)
+
+        print(name_y)
+        flog_x = self.yichangtianjia(collect_act, porid_x)
+        if flog_x:
+            result1 = set()
+            self.save_thxl(doc_x, doc_x, name_x, result)
+            if len(result1):
+                print(result1)
+            flog_x = self.yichangtianjia(collect_act, porid_x, 0)
+            self.save_thxl(doc_x, doc_x, name_x, result)
+
+        print(name_x)
+        flog_y = self.yichangtianjia(collect_act, porid_y)
+        if flog_y:
+            result1 = set()
+            self.save_thxl(collect_act, doc_y, doc_y, name_y, result)
+            if len(result1):
+                print(result1)
+            flog_y = self.yichangtianjia(collect_act, porid_y, 0)
+            self.save_thxl(doc_y, doc_y, name_y, result)
+
+        time.sleep(5)
+        self.updata_add(collect_act, porid_x)
+        self.updata_add(collect_act, porid_y)
+
+        self.add_updata(doc_x, collect_act, name_x, porid_x)
+        self.add_updata(doc_x, collect_act, name_y, porid_y)
+        return result
+
+    # 结束替换失败还原
+
+
+
 
     # 添加商品设置
 
@@ -1919,7 +2154,7 @@ class JX():
                 }
                 num = 0
 
-                while 3 > num:
+                while self.max_num > num:
                     try:
                         response = self.session.post(url, data=post_data)
                         json_data = response.json()
@@ -1931,7 +2166,7 @@ class JX():
                             if '已有同名商品' in json_data['msg']:
                                 break
                             num += 1
-                            time.sleep(1)
+                            time.sleep(5)
                             err += 1
                             continue
                         print(json_data)
@@ -1941,7 +2176,7 @@ class JX():
                         print("请求超时，请手动修改", name)
                         num += 1
                         err += 1
-                        time.sleep(1)
+                        time.sleep(5)
                     except Exception as e:
                         print(e, name)
                         err += 1
@@ -1983,7 +2218,7 @@ class JX():
     def get_tage_product(self, target):
         # 获取商品
         url = 'https://e.waimai.meituan.com/gw/bizproduct/v3/food/r/getSpuListCommon?ignoreSetRouterProxy=true'
-        tage_names = jx.get_tag()
+        tage_names = self.get_tag()
         # print(tage_names)
         tag_data = None
         for i in tage_names:
@@ -1993,7 +2228,7 @@ class JX():
         assert tag_data is not None, '没有找到该标签'
         pro_ids = ''
         pro_num = 0
-        pageNum = jx.zz(tag_data['spuCount'], 30)
+        pageNum = self.zz(tag_data['spuCount'], 30)
         for j in range(pageNum):
             print(j)
             pro_ids = ''
@@ -2010,7 +2245,7 @@ class JX():
             print(data)
             num = 0
             # response = session.post(url, data=data)
-            while 3 > num:
+            while self.max_num > num:
                 try:
                     response = self.while_fun(requests.post, headers=self.headers, url=url, data=data)
                     if response.status_code == 200:
@@ -2025,20 +2260,20 @@ class JX():
                     else:
                         print('请求失败', response.json())
                         num += 1
-                        time.sleep(3)
+                        time.sleep(5)
                         continue
 
                 except Exception as e:
                     print(e)
                     num += 1
-                    time.sleep(3)
+                    time.sleep(5)
                     continue
 
         return tag_data
 
     def del_product(self, tagname):
         # 删除商品
-        tag_data = jx.get_tage_product(tagname)
+        tag_data = self.get_tage_product(tagname)
         self.del_tagname(tag_data['id'])
 
         return 0
@@ -2049,35 +2284,61 @@ class JX():
 
 if __name__ == '__main__':
     # asyncio
-    cookie = "_lxsdk_cuid=18f141d9eb9c8-0033f3d2dbef57-26001d51-1fa400-18f141d9eb9c8; device_uuid=!12fd30cd-bbd3-45d4-973d-ca03b91e7466; uuid_update=true; pushToken=09AYv1uic3k41UssyQIjORAP2oPosNjCoTyahwwJsbE4*; WEBDFPID=vyyx797w933w54z5z42386u5z48447688092w8u6z869795897u0793w-2035446113020-1720086113020GKYCOGIfd79fef3d01d5e9aadc18ccd4d0c95073509; wm_order_channel=default; swim_line=default; utm_source=; acctId=97786666; token=0mU-VOhc73WBOaQmkKw6od9TBptnt7HvDqRSZFObLmy0*; isOfflineSelfOpen=0; city_id=0; isChain=1; ignore_set_router_proxy=true; region_id=; region_version=0; bsid=AaZBO53AMQfbGyAgPNv2WCzw_c7PWvf7OEMVoJS-tYsjyFOO3hzUEAICkqOP1Wyh13_TsCjW9ve72COETmRV3w; city_location_id=0; location_id=0; has_not_waimai_poi=0; cityId=440300; provinceId=440000; logistics_support=; JSESSIONID=lh0lzez1a3bda18bbigfaxz0; labelInfo=1721318400; au_trace_key_net=default; isIframe=false; iuuid=3A6E6E56906C1B7BEE5DF5FDD07068DE5945ACB6DD9766926DA724D2CB3D2BCD; _lxsdk=3A6E6E56906C1B7BEE5DF5FDD07068DE5945ACB6DD9766926DA724D2CB3D2BCD; openh5_uuid=3A6E6E56906C1B7BEE5DF5FDD07068DE5945ACB6DD9766926DA724D2CB3D2BCD; uuid=3A6E6E56906C1B7BEE5DF5FDD07068DE5945ACB6DD9766926DA724D2CB3D2BCD; oops=AgHBInHybKHLbPM1rMSpVzqe29EoYRAyiLcZ3mUjQocHRKm7SfoFx1M1z_8Ji6MQ1_v6LlHzkT4gOAAAAAB1IQAAdsY8SCUyaOJoAljLTNtKqsXR06y_SiBWyqHLjvmpq4UaESEDzppm1xrp4oEJeH_P; userId=3068406851; _lx_utm=utm_source%3D; setPrivacyTime=3_20240722; wmPoiId=19021228; wmPoiName=SweetyMove%E6%80%9D%E8%8C%89%E5%84%BF%C2%B7%E8%9B%8B%E7%B3%95%E5%AE%9A%E5%88%B6%EF%BC%88%E7%8E%84%E6%AD%A6%E5%BA%97%EF%BC%89; set_info_single=%7B%22regionIdForSingle%22%3A%221000610100%22%2C%22regionVersionForSingle%22%3A1693877547%7D; shopCategory=food; wpush_server_url=wss://wpush.meituan.com; set_info=%7B%22wmPoiId%22%3A19021228%2C%22ignoreSetRouterProxy%22%3Atrue%7D; logan_session_token=vutq24gcpo3n94u6ly2r; _lxsdk_s=190d8e0f679-c4e-640-366%7C97786666%7C101"
+    # asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    cookie = "_lxsdk_cuid=190a0db1af4c8-0cd06bc2f88d9d-26001c51-1fa400-190a0db1af4c8; device_uuid=!94d7445a-a2ed-47d7-8010-8432028f6322; uuid_update=true; pushToken=09pEkZvq6nDmuDqh6CFubPArvfISAWHgGDcJYvydSSU0*; _lxsdk=!94d7445a-a2ed-47d7-8010-8432028f6322; WEBDFPID=yz76y3w74x6u545011zy346vz1340642809ww35v0wx97958y4wv89z8-2037061296710-1721701296710OCEKKIQfd79fef3d01d5e9aadc18ccd4d0c95072811; acctId=97786666; token=0SMpnRePP2E0A1ZnrE-cgmrVH6yGdwFahVU6Q7toqTDQ*; isOfflineSelfOpen=0; city_id=0; isChain=1; ignore_set_router_proxy=true; region_id=; region_version=0; bsid=gX96DeBVSLMlUKtxsf0_d0TITUbwiPo2fd1a9y5dP0SBIBZ3fqXqg1iWXhgUhMFG8y9mqqgt15BY5bPRg6nqrA; city_location_id=0; location_id=0; has_not_waimai_poi=0; onlyForDaoDianAcct=0; cityId=440300; provinceId=440000; logistics_support=; setPrivacyTime=3_20240819; wmPoiId=23866026; wmPoiName=%E5%B5%8A%E5%B7%9E%E5%B0%8F%E5%90%83(%E5%B0%8F%E7%AC%BC%E5%8C%85%C2%B7%E7%B2%A5%C2%B7%E6%B1%A4%E7%B2%89%E9%9D%A2); set_info_single=%7B%22regionIdForSingle%22%3A%221000330200%22%2C%22regionVersionForSingle%22%3A1720677971%7D; _source=APP; acctName=13922879731; uuid=!94d7445a-a2ed-47d7-8010-8432028f6322; igateApp=igate; shopCategory=food; JSESSIONID=1isjmsoamxsrm16ne2s8rnnveu; wpush_server_url=wss://wpush.meituan.com; set_info=%7B%22wmPoiId%22%3A23866026%2C%22ignoreSetRouterProxy%22%3Atrue%7D; logan_session_token=oz1egk12otfyahez018k; _lxsdk_s=191684f53ff-dd1-da2-f97%7C201322941%7C4540"
 
-    jx = JX('19021228', cookie)
+    poi_id = '23866026'
+
+    jx = JX(poi_id, cookie)
+
+    # jx.run_Recover("11199362_0")
+
+    # jx.get_product()
+
+    # df = pd.read_excel(r"G:\updata\夹心\test.xls")
+    #
+    # jx.updata_jx(df, set(), 1)
 
     # document = jx.collection.find_one({"name": "提拉米苏蛋糕"}) getProductThreshold
 
-    # df = pd.read_excel(r'G:\updata\test\jxTemp.xlsx', engine='openpyxl')
-    info = '夹心选择一#甜甜黄桃果肉🍑#进口新鲜火龙果💕#新鲜美味芒果肉🥭#醇厚奥利奥碎🍪  #酸甜草莓果馅#新鲜美味芒果果馅🥭##夹心选择二#甜甜黄桃果肉🍑#进口新鲜火龙果💕#新鲜美味芒果肉🥭#醇厚奥利奥碎🍪  #酸甜草莓果馅#新鲜美味芒果果馅🥭##'
-    resultj = set()
+    # df = pd.read_excel(r'G:\updata\test\test2.xlsx', engine='openpyxl')
+    # df = pd.read_excel(r'G:\updata\test\test2.xls')
+    # info = '夹心选择一#甜甜黄桃果肉🍑#进口新鲜火龙果💕#新鲜美味芒果肉🥭#醇厚奥利奥碎🍪  #酸甜草莓果馅#新鲜美味芒果果馅🥭##夹心选择二#甜甜黄桃果肉🍑#进口新鲜火龙果💕#新鲜美味芒果肉🥭#醇厚奥利奥碎🍪  #酸甜草莓果馅#新鲜美味芒果果馅🥭##'
+    # resultj = set()
     # jx.updata_jx(df, resultj, 1)
     # jx.set_bb(document, '', info, 0)
-    # df = pd.read_excel(r'G:\updata\test\刷打包费1-.xlsx', engine='openpyxl')
+
+    # df = pd.read_excel(r'G:\updata\原价\test.xlsx')
     # jx.yanjia(df)
+    # jx.updata_jx(df, set(), 1)
 
     # result = set()
+    # df = pd.read_excel(r'G:\updata\test\刷打包费1-.xlsx', engine='openpyxl')
     # jx.add_product(df, result)
     # print(result)
 
-    # tager = '店铺公告88'
-    # for i in ["店铺公告15", "店铺公告2"]:
-    #     res = jx.del_product(i)
-    #     print(res)
+    tagers = [
+        '店铺公告1',
+        '店铺公告2',
+        '店铺公告3',
+        '店铺公告4',
+        '店铺公告5',
+        '店铺公告6',
+    ]
+    for i in tagers:
+        res = jx.del_product(i)
+        print(res)
 
     # doc = jx.collection.find_one({"name": '指谁谁发财生日蛋糕'})
     # jx.set_properties(doc['mapSpuExtendList'])
 
-    jx.replace_product("红丝绒蛋糕", "高富帅男生蛋糕", resultj)
+    # result = set()
+    # docx = jx.collection.find_one({"name": '只许一人终老节日蛋糕'})
+    # jx.save_thxl(docx, docx, '只许一人终老节日蛋糕', result)
+
+    # jx.replace_product("生日蜡烛", "【“石”分喜歡   “榴”你身邊】秋天的石榴生日蛋糕", result)
     # jx.get_product_v2()
-    print(resultj)
+    # print(result)
     '''
     {'份量': ['10人份'], '口味': ['不辣', '微辣', '中辣', '特辣'], '自选粉面': ['米粉', '河粉', '面条'], '薄皮小笼包（5个）': ['鲜肉蒸饺（5个）', '玉米蒸饺（5个）'], '汤/饮料/小吃': ['现磨豆浆（热的）', '现磨豆浆（冰的）', '百事可乐', '冰红茶', '茶叶蛋（1个）', '荷包蛋（1个）', '咸鸭蛋（1个）']}
 

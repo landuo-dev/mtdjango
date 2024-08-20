@@ -1,0 +1,249 @@
+/* 全局样式 */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f5f5f5; /* 浅灰色背景，作为页面的基础色调 */
+}
+
+/* 头部和底部样式 */
+header, footer {
+    background-color: #ff7f50; /* 橙色背景 */
+    color: white;
+    text-align: center;
+    padding: 15px 0;
+}
+
+/* 导航栏样式 */
+nav {
+    background-color: #ff8c00; /* 深一点的橙色背景 */
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+nav ul li a:hover {
+    background-color: #ffa500; /* 鼠标悬停时变为更亮的橙色 */
+}
+
+/* 内容容器样式 */
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background-color: white; /* 白色背景，保持内容的清晰度 */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 下拉列表*/
+.main-functions {
+    position: relative; /* 作为#mySelect绝对定位的参照点 */
+}
+
+#mySelect {
+    display: none;
+    position: absolute; /* 脱离文档流 */
+    top: 100%; /* 紧贴#poi_id下方 */
+    /*left: 50px; !* 或者使用right，取决于布局 *!*/
+    right: 450px;
+    z-index: 9999; /* 确保下拉列表在其他元素之上 */
+    background-color: white;
+    border: 1px solid #ccc;
+    width: 50%; /* 假设你想让下拉列表与输入框宽度相同 */
+    /* 根据需要设置其他样式 */
+}
+
+#poi_id:focus + .main-functions,
+.main-functions:hover .main-functions {
+    /* 不仅在输入框获得焦点时显示，也在鼠标悬停时显示（可选） */
+    display: block;
+}
+
+
+/* 结束下拉列表项样式 */
+
+/* 列表样式 */
+.columns {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.column {
+    flex: 1;
+    padding: 20px;
+    border: 1px solid #e0e0e0; /* 浅灰色边框，与橙色形成对比 */
+    background-color: #fff8e1; /* 浅橙色背景，与主题相呼应 */
+    box-sizing: border-box;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.column ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+}
+
+.column li {
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0; /* 浅灰色底部边框 */
+    text-align: center;
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.column li img {
+    /*position: absolute;*/
+    /*top: 3px;*/
+    /*left: 51px;*/
+    vertical-align: middle;
+    width: 35px;
+    height: 35px;
+    margin-right: 25px;
+
+}
+
+.column li .rank1, .column li .rank2, .column li .rank3 {
+    width: 45px;
+    height: 45px;
+    margin-left: -2px;
+}
+
+
+/*结束列表样式*/
+
+/* 表格样式 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #ff7f50; /* 橙色头部背景 */
+    color: white;
+}
+
+.pro_img {
+    width: 150px;
+    height: 100px;
+    margin-right: 10px;
+}
+
+
+.sort-icon1::after {
+    content: ""; /* 这里可以是一个字符或URL，但现在是空的 */
+    display: inline-block;
+    width: 15px; /* 假设图标大小 */
+    height: 15px;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+    background-image: url("/static/images/down.png");
+    background-size: cover; /* 调整背景图像大小，使其覆盖整个容器 */
+    /* 如果使用Font Awesome等图标库，可以设置为相应的类名 */
+    /* 例如：font-family: 'FontAwesome'; content: '\f0de'; （假设\f0de是上升箭头的代码） */
+}
+
+.sort-icon2::after {
+    content: ""; /* 这里可以是一个字符或URL，但现在是空的 */
+    display: inline-block;
+    width: 15px; /* 假设图标大小 */
+    height: 15px;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+    background-image: url("/static/images/up.png");
+    background-size: cover; /* 调整背景图像大小，使其覆盖整个容器 */
+    /* 如果使用Font Awesome等图标库，可以设置为相应的类名 */
+    /* 例如：font-family: 'FontAwesome'; content: '\f0de'; （假设\f0de是上升箭头的代码） */
+}
+
+/* 结束表格样式 */
+
+/* 时间选择框 */
+.main-functions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.time-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date_box {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.date {
+    width: 120px;
+}
+
+.submit-more-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 结束时间选择框 */
+
+/* 日期选择样式 */
+.date_box {
+    position: relative;
+}
+
+.date {
+    position: absolute;
+    display: none;
+    z-index: 9999;
+    left: -50%;
+}
+
+.check {
+    background: #ff7f50;
+    color: white;
+}
+
+/* 结束日期选择样式 */
+
+
+
+

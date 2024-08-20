@@ -39,8 +39,8 @@ def getdata(i, poi_id):
 
 def save_act_data(proid, poi_id, cookie):
     client = MongoClient('mongodb://localhost:27017/')
-    db = client['actproduct']
-    collec = db[str(poi_id)]
+    db = client[str(poi_id)]
+    collec = db['proact']
     doc = collec.find_one({"spuId": proid})
     # print(doc)
     name = doc.get('name', 0)

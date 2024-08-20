@@ -13,14 +13,16 @@ comment: 蛋糕是生活中的仪式感，是岁月里的调味剂，感谢亲�
 小店集体员工祝您生日快乐，愿你无疾无忧、百岁安生、不离笑🎉
 userCommentCtime: 2024-05-17
 """
+import re
+
 import requests
 
 
-def set_postdata(cid, ctime, poi_id, content):
+def set_postdata(cid, ctime, poi_id, content, token):
     post_data = {
         'acctId': 97786666,
         'wmPoiId': poi_id,
-        'token': '0c13IljXjtIyG77Alt_zxFG0H3u-IsZAQAO3bo2rrDlI*',
+        'token': token,
         'appType': 3,
         'toCommentId': cid,
         'comment': content,
@@ -49,7 +51,9 @@ def fs(cid, ctime, poi_id, cookie, content):
         'sec-ch-ua-platform': '"Windows"'
         # ... 其他 headers 字段
     }
-    post_data = set_postdata(cid, ctime, poi_id, content)
+    sr1 = re.sub(' ', '', cookie)
+    token = re.findall(".*;token=(.*?);", sr1)[0]
+    post_data = set_postdata(cid, ctime, poi_id, content, token)
     res = requests.post(url, post_data, headers=headers)
     print(res.json())
 

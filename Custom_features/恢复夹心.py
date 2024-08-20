@@ -11,7 +11,7 @@ import re
 from Custom_features.set_yuan_bb import set_post_data
 
 
-async def fetch_data(session, url, headers, post_data, name):
+async def fetch_data(session, url, headers, post_data):
     try:
         async with session.post(url, headers=headers, data=post_data) as response:
             if response.status != 200:
@@ -50,10 +50,10 @@ async def Recover(back_poi_id, poi_id, cookie):
     # 创建 MongoDB 客户端
     client = MongoClient('mongodb://localhost:27017/')
     # 选择数据库和集合（相当于 SQL 中的表）
-    test = client['test']
+    test = client[str(poi_id)]
     back = client['back_up_jx']
     back_collection = back[str(back_poi_id)]
-    collection = test[str(poi_id)]
+    collection = test["prodata"]
     if not str(poi_id) in test.list_collection_names():
         return '该店没入库'
 

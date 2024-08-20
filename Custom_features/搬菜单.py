@@ -75,8 +75,8 @@ def add_product(old_poi_id, new_poi_id, description, cookie, dict1, result):
     # 创建 MongoDB 客户端
     client = MongoClient('mongodb://localhost:27017/')
     # 选择数据库和集合（相当于 SQL 中的表）
-    db = client['test']
-    collection = db[str(old_poi_id)]
+    db = client[str(old_poi_id)]
+    collection = db['prodata']
     url = 'https://e.waimai.meituan.com/reuse/product/food/w/save'
     headers = {
         'Accept': 'application/json, text/plain, */*',
@@ -251,6 +251,7 @@ def move_pro(old_poi_id, new_poi_id, description, cookie_new, cookie_old, result
         del_tagname(new_poi_id, i['id'], cookie_new)
 
     tags = get_tag(old_poi_id, cookie_old)
+
     for i in tags:
         dict1[i['name']] = i['id']
 
@@ -277,7 +278,6 @@ def move_pro(old_poi_id, new_poi_id, description, cookie_new, cookie_old, result
     session.cookie = cookie_new
     chang = len(tags) + 100
     for i, val in enumerate(tags):
-        print(val['name'])
         if dict1.get(val['name'], 0):
             print(val['name'])
             post_data = {
@@ -307,24 +307,16 @@ def move_pro(old_poi_id, new_poi_id, description, cookie_new, cookie_old, result
 
 
 if __name__ == '__main__':
-    new_poid, old_poid = 21380261, 21335860
+    new_poid, old_poid = 24368919, 24343873
 
-    cookie_new = "_lxsdk_cuid=18f575b07aec8-0a49afc8b68373-26001d51-1fa400-18f575b07afc8; _lxsdk=18f575b07aec8-0a49afc8b68373-26001d51-1fa400-18f575b07afc8; device_uuid=!c2da0883-d229-4ee8-a113-fe1f7402cbce; uuid_update=true; WEBDFPID=1715157536796AWQOUICfd79fef3d01d5e9aadc18ccd4d0c95073644-1715157536796-1715157536796AWQOUICfd79fef3d01d5e9aadc18ccd4d0c95073644; acctId=193494578; token=0J5MQoR1rV3by6nTPYC_ko3ndVxLE9YjLelfXj9mHkFI*; wmPoiId=21380261; isOfflineSelfOpen=0; city_id=640100; isChain=0; ignore_set_router_proxy=false; region_id=1000640100; region_version=1715142620; bsid=Jwm5hr652HFH3UHLtIExF01yc5xRQOKwaSx6LyQTFnWlxgsN7RVa2UmM6xCzRQB4nA_G48w_nUfjrP-Kie5DDg; city_location_id=640100; location_id=640106; has_not_waimai_poi=0; cityId=440300; provinceId=440000; set_info=%7B%22wmPoiId%22%3A%2221380261%22%2C%22region_id%22%3A%221000640100%22%2C%22region_version%22%3A1715142620%7D; pushToken=0J5MQoR1rV3by6nTPYC_ko3ndVxLE9YjLelfXj9mHkFI*; shopCategory=food; wpush_server_url=wss://wpush.meituan.com; JSESSIONID=tgcvvlo2avb51600iwxetlis3; logan_session_token=tqlw7ne87uu69kmar7rq; _lxsdk_s=18f575b07b2-eb5-007-278%7C%7C324"
+    cookie_new = "_lxsdk_cuid=18ecfe70f19c8-053bc20de9f5f7-26001b51-1fa400-18ecfe70f19c8; _lxsdk=18ecfe70f19c8-053bc20de9f5f7-26001b51-1fa400-18ecfe70f19c8; device_uuid=!a872b6f5-f83c-4286-b560-e138826d7cec; uuid_update=true; pushToken=0nIZj3B_LinFqiwrhDfunX124caw0KHxKieouFQ2LELs*; WEBDFPID=vxwwy223wyvw5wvxyz68426y169u7x6381vw46yuz43979589zx3w31z-2028334451068-1712974451068ISEUCQGfd79fef3d01d5e9aadc18ccd4d0c95072090; shopCategory=food; acctId=205819758; token=0tlXPy7jiwnFS2rZugztm-DNb8PjCQKodre_BJB5B_Ek*; wmPoiId=24368919; isOfflineSelfOpen=1; city_id=150100; isChain=0; ignore_set_router_proxy=false; region_id=1000150100; region_version=1723804352; bsid=Rd6WrtkAijA4hKWmlkY7WLlKKv5qRKJoaxZOMhrlTgZ_qVuYLCgWDcH2ZaRzCGPEG9xn5BbOKUKC62uGlSTtvg; city_location_id=150100; location_id=150105; has_not_waimai_poi=0; onlyForDaoDianAcct=0; cityId=440300; provinceId=440000; set_info_single=%7B%22regionIdForSingle%22%3A%221000150100%22%2C%22regionVersionForSingle%22%3A1723804352%7D; set_info=%7B%22wmPoiId%22%3A%2224368919%22%2C%22region_id%22%3A%221000150100%22%2C%22region_version%22%3A1723804352%7D; wpush_server_url=wss://wpush.meituan.com; JSESSIONID=1ahnu9pufjokv1ek56vccbgk46; logan_session_token=v64pww741b7uj3ify83c; _lxsdk_s=191686c30a3-fbf-2ba-b7f%7C%7C77"
 
-    cookie_old = "_lxsdk_cuid=18f42d4af18c8-05326f285d3be-26001d51-1fa400-18f42d4af19c8; _lxsdk=18f42d4af18c8-05326f285d3be-26001d51-1fa400-18f42d4af19c8; device_uuid=!e5cdf072-8fc1-45a2-bd44-7e8d73fa6188; uuid_update=true; pushToken=0gJhM3UjnkYMkyZkeNKR8Mh4aN_SiGNbfswJbCKOcxcU*; WEBDFPID=3w6078632yuw53yz1wyx280yv023u3zy81u519302uw97958xz6634v8-2030260342677-1714900342677YESIMUKfd79fef3d01d5e9aadc18ccd4d0c95071861; acctId=97786666; token=0Yiwrei9cmROE57dt-2BFYa8fEezzzC5oA2NacF2dxw4*; city_id=0; isChain=1; ignore_set_router_proxy=true; region_id=; region_version=0; bsid=uzNN9_BdH54VVkoXj5eNPhevkHz7pRL7tBVkLXkdQy5CQYBFt0j_e3-64FepGOr-Wn0KjmepQEqXf0yTUi67-A; city_location_id=0; location_id=0; cityId=440300; provinceId=440000; isOfflineSelfOpen=0; logistics_support=; wmPoiId=21335860; wmPoiName=SweetyMove%E7%94%9F%E6%97%A5%E8%9B%8B%E7%B3%95%E5%AE%9A%E5%88%B6%C2%B7%E5%8A%A8%E7%89%A9%E5%A5%B6%E6%B2%B9-%E5%86%B0%E6%B7%87%E6%B7%8B%EF%BC%88%E9%87%8D%E5%BA%86%E5%BA%97%EF%BC%89; wpush_server_url=wss://wpush.meituan.com; shopCategory=food; set_info=%7B%22wmPoiId%22%3A21335860%2C%22ignoreSetRouterProxy%22%3Atrue%7D; JSESSIONID=1j52hm6hx1nzf1t4ygoy8e4xwo; logan_session_token=gtcujcg3afo249pacwbe; _lxsdk_s=18f55bbe969-d59-3fb-5b3%7C%7C2072"
-
+    cookie_old = "_lxsdk_cuid=18ecfe70f19c8-053bc20de9f5f7-26001b51-1fa400-18ecfe70f19c8; _lxsdk=18ecfe70f19c8-053bc20de9f5f7-26001b51-1fa400-18ecfe70f19c8; device_uuid=!a872b6f5-f83c-4286-b560-e138826d7cec; uuid_update=true; pushToken=0nIZj3B_LinFqiwrhDfunX124caw0KHxKieouFQ2LELs*; WEBDFPID=vxwwy223wyvw5wvxyz68426y169u7x6381vw46yuz43979589zx3w31z-2028334451068-1712974451068ISEUCQGfd79fef3d01d5e9aadc18ccd4d0c95072090; acctId=194003691; token=0CkVFOCaTGw8KabDL5W4H6FhcyLJyMaoQN37PvPjCZ1E*; wmPoiId=24343873; isOfflineSelfOpen=1; city_id=150105; isChain=0; ignore_set_router_proxy=false; region_id=1000150100; region_version=1723697752; bsid=HQjBBmnynetHzDLu1Y6bDpGlJ1Kp3QaoG_lDLF2bsTglAbeVsA_3ZEql1V_fxrlUNu1_AMRnorOLm1xpVeujHQ; city_location_id=150100; location_id=150105; has_not_waimai_poi=0; onlyForDaoDianAcct=0; cityId=440300; provinceId=440000; set_info_single=%7B%22regionIdForSingle%22%3A%221000150100%22%2C%22regionVersionForSingle%22%3A1723697752%7D; set_info=%7B%22wmPoiId%22%3A%2224343873%22%2C%22region_id%22%3A%221000150100%22%2C%22region_version%22%3A1723697752%7D; shopCategory=food; wpush_server_url=wss://wpush.meituan.com; JSESSIONID=j5p049q5vrxzpgafcwsj1d44; logan_session_token=wstsp95sdyjh50du37le; _lxsdk_s=19159f1aa9a-ef1-088-93%7C%7C884"
     dis = '''
-    【承诺】品牌承诺：新鲜现做，不满意包退包换！
-【注意】因为蛋糕都是新鲜现做现送，系统预计时间不准确，全城冷链配送1-3小时送达，请勿平台催单
-【赠送】刀叉盘（标配）、生日帽一个和蜡烛一包
-【售后】收到蛋糕检查签收、不满意可退换
-【保存】低温保存：0-5度
-【规格】关于蛋糕尺寸请参考菜单中蛋糕尺寸对照表
-【其他】加高，加大，换动物奶油请看蛋糕加大升级查看，或者咨询商家
-【尺寸】4英寸1-2人份、6英寸1-4人份、8英寸4-8人份、10英寸8-12人份
     '''
-
-    # move_pro(old_poid, new_poid, dis, cookie_new, cookie_old)
+    result = set()
+    move_pro(old_poid, new_poid, dis, cookie_new, cookie_old, result)
+    print(result)
 
     #     更新新店的数据库
     # main01(new_poid, headers1)
@@ -332,11 +324,11 @@ if __name__ == '__main__':
     # main02(new_poid)
     # print('完成')
 
-    client = MongoClient('mongodb://localhost:27017/')
-    db = client['actproduct']
-    collect = db['21335860']
-
-    collect.update_many({"tagName": "情侣纪念︵💘︵"}, {"$set": {"tagName": "情侣婚庆︵💘︵"}})
+    # client = MongoClient('mongodb://localhost:27017/')
+    # db = client['actproduct']
+    # collect = db['21335860']
+    #
+    # collect.update_many({"tagName": "情侣纪念︵💘︵"}, {"$set": {"tagName": "情侣婚庆︵💘︵"}})
 
 """
 

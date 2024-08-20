@@ -26,8 +26,8 @@ from Custom_features.折扣信息入库补充 import main1 as set_database_jg01,
 from Custom_features.批量更改商品折扣价 import main as updata_database_jg
 from Custom_features.折扣同步2 import main as syncjg
 from Custom_features.搬菜单 import move_pro as move_pro
-from Custom_features.月售替换 import rep_pro as rep_pro1
-from Custom_features.月售替换2 import rep_pro as rep_pro2
+# from Custom_features.月售替换 import rep_pro as rep_pro1
+# from Custom_features.月售替换2 import rep_pro as rep_pro2
 from Custom_features.月售替换3 import rep_pro as rep_pro3
 from Custom_features.名字替换 import rep_name
 from Custom_features.auto_reply import auto_rep
@@ -37,12 +37,18 @@ from Custom_features.save_yx import save_jz
 from Custom_features.push_ds import push_ds
 from Custom_features.delds_rw import delds_rw
 from Custom_features.push_json import push_json
+from Custom_features.hangye_json import hangye_json
 from Custom_features.back_wm import back
 from Custom_features.get_back import get_back_log
 from Custom_features.get_back_jg import back_zk
 from Custom_features.恢复夹心 import Recover
 from Custom_features.恢复价格 import Recover_jg
+from Custom_features.每日数据 import get_data
 from encrypt.JX import JX
+
+
+# from encrypt.JG import JG
+
 
 # Create your views here.
 
@@ -79,9 +85,30 @@ def index(request):
 def push_arr():
     client = MongoClient('mongodb://localhost:27017')
     db = client['other']
-    collections = db['wmname']
-    arr = [(f"{i['poiName']}:{i['id']}", i['id']) for i in collections.find()]
+    collections = db['jt_all']
+    arr = [(f"{i['店铺名称']}:{str(int(i['ID号码']))}: {i['店铺对接负责人']}", str(int(i['ID号码']))) for i in collections.find()]
     return arr
+
+
+def hangye(request, poi_id, startTime=1716134400, endTime=''):
+    if poi_id == '':
+        poi_id = '11111111111'
+    if endTime == '':
+        now = datetime.now()
+        endTime = int(now.timestamp())
+
+    arr = push_arr()
+    print(startTime)
+    print(endTime)
+    print(poi_id)
+    json_Data = hangye_json(poi_id, int(startTime), int(endTime))
+    # json_Data['arr'] = arr
+    # print(json_Data)
+    json_Data["arr"] = arr
+    # print(json_Data)
+    json_Data['startTime'] = int(startTime)
+    json_Data['endTime'] = endTime
+    return render(request, 'hangye.html', {"data": json_Data, "poi_id": poi_id})
 
 
 def push_qd(request, poi_id, startTime=1716134400, endTime=''):
@@ -132,7 +159,6 @@ def set_tupian(request):
     date_object = datetime.strptime(date_string, date_format)
     # 将datetime对象转换为时间戳
     timestamp = int(date_object.timestamp())
-
 
     client = MongoClient('mongodb://localhost:27017')
     other = client['other']
@@ -232,7 +258,10 @@ def zk_rk(request, number, aa):
 
     print('开始入库', poi_id)
     try:
-        result += set_database_jg01(poi_id, cookie)
+        try:
+            result += set_database_jg01(poi_id, cookie)
+        except Exception as e:
+            print(e)
         set_database_jg02(poi_id, cookie)
     except Exception as e:
         print(e)
@@ -240,7 +269,7 @@ def zk_rk(request, number, aa):
         return JsonResponse({'succ': '', 'msg': "数据更新失败，请联系管理员"})
     cache.delete(poi_id)
     return JsonResponse({'succ': result, 'msg': ""})
-
+# 折扣更改
 
 # 更改夹心
 def updata_jx(request, number, aa):
@@ -256,13 +285,13 @@ def updata_jx(request, number, aa):
         return JsonResponse({'succ': '', 'msg': "该店正在操作，请等待结束"})
     cache.set(poi_id, 1)
 
-    r = redis.Redis()
-    r.rpush('jx', poi_id)
-    while 1:
-        pid = r.lindex('jx', 0).decode('utf-8')
-        if pid == poi_id:
-            break
-        time.sleep(15)
+    # r = redis.Redis()
+    # r.rpush('jx', poi_id)
+    # while 1:
+    #     pid = r.lindex('jx', 0).decode('utf-8')
+    #     if pid == poi_id:
+    #         break
+    #     time.sleep(15)
 
     cookie = request.POST['cookie'].strip()
 
@@ -278,7 +307,7 @@ def updata_jx(request, number, aa):
     except Exception as e:
         print(e)
         cache.delete(poi_id)
-        r.lpop('jx')
+        # r.lpop('jx')
         return JsonResponse({'succ': '', 'msg': "文件格式错误，请核对文件"})
     try:
         df = pd.read_excel(file_obj)
@@ -292,7 +321,7 @@ def updata_jx(request, number, aa):
             print(e)
             # 如果 openpyxl 也失败，则抛出错误或返回错误消息给用户
             cache.delete(poi_id)
-            r.lpop('jx')
+            # r.lpop('jx')
             return JsonResponse({'succ': '', 'msg': "文件格式错误，请核对文件"})
     reult = '更新成功，概率失败商品--》：'
     print('开始更改夹心', poi_id)
@@ -302,6 +331,7 @@ def updata_jx(request, number, aa):
         df_no_duplicates = df.drop_duplicates(subset=column_to_drop_duplicates_on)
         # print(df_no_duplicates)
 
+
         jx = JX(poi_id, cookie)
         jx.updata_jx(df_no_duplicates, set_arr, 1)
 
@@ -309,11 +339,11 @@ def updata_jx(request, number, aa):
         # set_arr = set_jx(df_no_duplicates, cookie, poi_id)
         if set_arr == '0':
             raise '报错'
-        r.lpop('jx')
+        # r.lpop('jx')
     except Exception as e:
         print(e)
         cache.delete(poi_id)
-        r.lpop('jx')
+        # r.lpop('jx')
         return JsonResponse({'succ': '', 'msg': '更新失败，请重试/联系管理员', 'arr': list(set_arr)})
     # try:
     #     reult = updata_Database_jx02(df, cookie)
@@ -495,8 +525,8 @@ def download_excel(request, poi_id):
     # 假设你有一个DataFrame
     client = MongoClient('mongodb://localhost:27017/')
     # 选择数据库和集合（相当于 SQL 中的表）
-    db = client['actproduct']
-    collection = db[str(poi_id)]
+    db = client[str(poi_id)]
+    collection = db['proact']
     documents = []
     dic = {}
     for i in collection.find():
@@ -513,17 +543,17 @@ def download_excel(request, poi_id):
                 '原价': i['originPrice'],
                 '折扣价': i['actPrice'],
             })
-        else:
-            flog = 1
-            dic[i['name']].append({
-                '商品折扣id': None,
-                '店铺id': poi_id,
-                '分类名称': i['tagName'],
-                '商品名字': i['name'],
-                '商品规格': i['spec'],
-                '原价': i['originPrice'],
-                '折扣价': None,
-            })
+        # else:
+        #     flog = 1
+        #     dic[i['name']].append({
+        #         '商品折扣id': None,
+        #         '店铺id': poi_id,
+        #         '分类名称': i['tagName'],
+        #         '商品名字': i['name'],
+        #         '商品规格': i['spec'],
+        #         '原价': i['originPrice'],
+        #         '折扣价': None,
+        #     })
 
         # print(dic)
     for key, val in dic.items():
@@ -569,9 +599,9 @@ def download_excel_new(request, poi_id):
     # 假设你有一个DataFrame
     client = MongoClient('mongodb://localhost:27017/')
     # 选择数据库和集合（相当于 SQL 中的表）
-    db = client['actproduct']
+    db = client[str(poi_id)]
     print(poi_id)
-    collection = db[str(poi_id)]
+    collection = db["proact"]
     documents = []
     dic = {}
     for i in collection.find():
@@ -785,6 +815,52 @@ def download_replace_excel(request):
     return response
 
 
+def gongzuoribao(request, username):
+    # 创建一个新的Excel工作簿
+    wb = Workbook()
+    ws = wb.active  # 获取活动的工作表，默认是第一个工作表
+
+    print(username)
+
+    # 写入标题行
+    headers = ['日期', '门店ID', '门店名称', '单量','营业额','推广费用','补单数（单量/金额）',
+               "运营负责人", "平台"]
+    ws.append(headers)
+
+    # 定义字体样式为加粗
+    header_font = Font(bold=True)
+
+    # 定义对齐样式为居中
+    header_alignment = Alignment(horizontal="center", vertical="center")
+
+    # 定义边框样式
+    thin_border = Border(left=Side(style='thin'),
+                         right=Side(style='thin'),
+                         top=Side(style='thin'),
+                         bottom=Side(style='thin'))
+    # 获取刚添加的标题行的索引（通常是最后一行）
+    header_row = ws.max_row
+
+    # 遍历标题行的每一个单元格，应用样式
+    for cell in ws[header_row]:
+        cell.font = header_font  # 加粗
+        cell.alignment = header_alignment  # 居中
+        cell.border = thin_border  # 添加边框
+
+    get_data(username, ws)
+
+    excel_file = BytesIO()
+    wb.save(excel_file)
+    # 将BytesIO对象的指针移动到开始位置，以便从头读取内容
+    excel_file.seek(0)
+    # 设置HTTP响应头部
+    response = HttpResponse(
+        excel_file.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename={username}日报.xlsx'
+
+    return response
 
 # 下载折扣表请求页面
 def dow_exc(request, number, aa):
@@ -838,9 +914,10 @@ def move_product(request, number, aa):
     # move_pro(poi_id_old, poi_id_new, cookie, cookie_old)
     set_result = set()
     try:
-        flog = move_pro(poi_id_old, poi_id_new, description,cookie, cookie_old, set_result)
+
+        flog = move_pro(poi_id_old, poi_id_new, description, cookie, cookie_old, set_result)
         if flog == '0':
-            raise '错误'
+            raise ValueError("错误")
     except Exception as e:
         print(e)
         cache.delete(poi_id_old)
@@ -889,7 +966,8 @@ def replace_priduct(request, number, aa):
     print(f'开始替换商品：{poi_id, name_x, name_y}')
     result = set()
     try:
-        rep_pro2(poi_id, name_x, name_y, cookie, result)
+        jx = JX(poi_id, cookie)
+        jx.replace_product(name_x, name_y, result)
     except Exception as e:
         print(e)
         cache.delete(poi_id)
@@ -944,7 +1022,8 @@ def replace_priduct1(request, number, aa):
 
     result = set()
     try:
-        rep_pro1(poi_id, name_x, name_y, act_name_x, act_name_y, cookie, result)
+        jx = JX(poi_id, cookie)
+        jx.replace_product(name_x, name_y, result)
     except Exception as e:
         print(e)
         cache.delete(poi_id)
@@ -1303,8 +1382,11 @@ def back_Recover(request, number, aa):
                     break
                 time.sleep(15)
             try:
-                set_database_jx01(poi_id, cookie)
-                asyncio.run(Recover(back_poid, poi_id, cookie))
+                jx = JX(poi_id, cookie)
+                jx.get_product()
+                jx.run_Recover(back_poid, 0)
+                # set_database_jx01(poi_id, cookie)
+                # asyncio.run(Recover(back_poid, poi_id, cookie))
                 r.lpop("jx")
             except Exception as e:
                 print(e)

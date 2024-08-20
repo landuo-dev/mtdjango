@@ -174,11 +174,11 @@ def updata_data(collection, name, spec, actid, errMsg, spuId, skuId, tagName):
 def main(new_poi_id, old_poi_id, cookie, result):
     # result = set()
     client = MongoClient('mongodb://localhost:27017/')
-    db = client['actproduct']
-    collection_old = db[str(old_poi_id)]
-    collection_new = db[str(new_poi_id)]
-    test = client['test']
-    collection_test = test[str(old_poi_id)]
+    db_old = client[str(old_poi_id)]
+    db_new = client[str(new_poi_id)]
+    collection_old = db_old["proact"]
+    collection_new = db_new["proact"]
+    collection_test = db_old["prodata"]
 
     query_params = {
         'source': 'pc',
@@ -219,12 +219,15 @@ def main(new_poi_id, old_poi_id, cookie, result):
 
         if "errMsg" in i and i['errMsg'] == "":
             continue
-
-        document_old = collection_test.find_one({'proid': i['spuId']})
-        name = document_old['name']
-        spec = i['spec']
-        price = i['actPrice']
-
+        try:
+            document_old = collection_test.find_one({'proid': i['spuId']})
+            name = document_old['name']
+            spec = i['spec']
+            price = i['actPrice']
+        except Exception as e:
+            print(e)
+            result.add(f"基础信息没有找到 {i['name']}， {i['spec']}")
+            continue
         document_new = collection_new.find_one({"name": name, "spec": spec})
         # print(document_new)
         if document_new and 'errMsg' in document_new and document_new['errMsg'] == '':

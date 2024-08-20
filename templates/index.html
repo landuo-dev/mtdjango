@@ -6,21 +6,44 @@
 {% block cssnr %}
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <link rel="stylesheet" href="{% static 'css/index2.css' %}">
 
 {% endblock %}
 {% block centent %}
     <h2>内容</h2>
-    {% if poi_id %}
-        <ul>
-            <li class="item1"><a href="/push_qd/{{ poi_id }}"><span class="nav-s1">{{ wmname }}：<br/>{{ poi_id }}经营数据</span>
-            </a></li>
-        </ul>
-    {% else %}
-        <ul>
-            <li class="item1"><a href="/push_qd/-1"><span class="nav-s1">{{ wmname }}：<br/>{{ poi_id }}经营数据</span>
-            </a></li>
-        </ul>
-    {% endif %}
+    <div id="navigation">
+        <a href="/push_qd/{{ -1 }}" class="item">
+            <img src="{% static "images/经营数据.png" %}" alt=""><span>经营数据</span>
+        </a>
+        <a href="/hangye/-1/1/1" class="item">
+            <img src="{% static "images/菜单详情.png" %}" alt=""><span class="nav-s1">菜单详情</span>
+        </a>
+        <div class="item">
+            <label for="username">姓名：</label><br/>
+            <input type="text" id="usename">
+            <button onclick="push_url()">下载日报</button>
+        </div>
+        <div class="item">4</div>
+        <div class="item">5</div>
+        <div class="item">6</div>
+        <div class="item">7</div>
+        <div class="item">8</div>
+        <!-- 可以根据需要继续添加 -->
+    </div>
 
 {% endblock %}
+
+
+{% block jsnr %}
+
+    <script>
+        function push_url() {
+            var usename = document.getElementById("usename").value;
+            window.location.href = "/ribao/" + usename;
+        }
+    </script>
+
+
+{% endblock %}
+
 

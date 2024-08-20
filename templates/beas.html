@@ -55,7 +55,7 @@
             <li class="list-item">
                 <div class="item">
                     折扣价格同步
-                <span class="error">入库操作，新店，老店、都要执行一次操作</span>
+                    <span class="error">入库操作，新店，老店、都要执行一次操作</span>
                 </div>
                 <ul>
                     <li><a href="/jx_rk/2/0">店铺商品信息入库/更新 </a></li>
@@ -130,8 +130,10 @@
 
     $(document).ready(function () {
 
-        const num =  {{ num }}
-        const aa = {{ aa }}
+        const num =
+        {{ num }}
+        const aa =
+        {{ aa }}
 
         const lis = $(".item").next('ul');
         lis.each(function (index) {
@@ -142,11 +144,30 @@
 
             }
         });
+
+        $('#cookie').on('input', function () {
+            var inputValue = $(this).val();
+
+            // 使用正则表达式匹配 wmPoiId= 后面的值
+            var regex = /wmPoiId=(\w+);/;
+            var match = regex.exec(inputValue);
+
+            if (match && match[1]) {
+                // 将匹配到的 wmPoiId 的值设置到第二个输入框
+                $('#poi_id').val(match[1]);
+            } else {
+                // 如果没有找到匹配项，清空第二个输入框
+                $('#poi_id').val('');
+            }
+        });
+
+
+
     })
 
 </script>
-    {% block jsnr %}
+{% block jsnr %}
 
-    {% endblock %}
+{% endblock %}
 </body>
 </html>

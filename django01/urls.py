@@ -30,14 +30,18 @@ from myapp import views
 #     path('replace_priduct', views.replace_priduct),
 #     path('jx_rk', views.jx_rk),
 #     path('zk_rk', views.zk_rk),
-#
+# url(r"^static/(?p<path>.*)$”，serve,settings.STATIC ROOT,name='static')
 # ]
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
     path('', views.index),
     path('push_qd/<str:poi_id>', views.push_qd),
+    path('ribao/<str:username>/', views.gongzuoribao),
     path('push_qd/<str:poi_id>/<str:startTime>/<str:endTime>', views.push_qd),
+    path('hangye/<str:poi_id>/<str:startTime>/<str:endTime>', views.hangye),
+
     path('get_tupian/', views.get_tupian, name='get_tupian'),
     path('set_tupian/', views.set_tupian, name='set_tupian'),
     path('updata_jx/<int:number>/<int:aa>', views.updata_jx),

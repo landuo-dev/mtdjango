@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>示例页面</title>
+    <link rel="stylesheet" href="{% static 'css/hangye.css' %}">
+    <link rel="stylesheet" href="{% static 'css/flatpickr.min.css' %}">
+
+    <script src="{% static 'js/jquery.js' %}"></script>
+    <script src="{% static 'js/flatpickr.js' %}"></script>
+    <script src="{% static 'js/flatpickr_zh.js' %}"></script>
+</head>
+
+<style>
+
+    :root {
+        --sort-down-url: url('{% static 'images/sort_down.png' %}');
+        --sort-up-url: url('{% static 'images/sort_up.png' %}');
+
+    }
+
+    /* 页码样式 */
+    #pagination-container {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .page-button {
+        display: inline-block;
+        margin: 0 5px; /* 页码之间的间距 */
+        padding: 5px 10px; /* 页码的内边距 */
+        background-color: #f0f0f0; /* 页码的背景色 */
+        border: 1px solid #ddd; /* 页码的边框 */
+        border-radius: 5px; /* 页码的边框圆角 */
+        cursor: pointer; /* 鼠标悬停时显示指针，*/
+    }
+
+    .disabled-span {
+        cursor: not-allowed;
+    }
+
+    .disabled-button {
+        /* 禁用按钮的样式 */
+        cursor: not-allowed; /* 鼠标悬停时显示禁止标志 */
+        opacity: 0.5; /* 可选：降低按钮的透明度以表示它是禁用的 */
+        /* 其他样式，比如移除点击效果等... */
+        pointer-events: none; /* 阻止鼠标事件，确保按钮不可点击 */
+    }
+
+    /* 选中页码的样式 */
+    .current {
+        background-color: #007bff;
+        color: #fff; /* 如果背景色较深，你可能需要更改文字颜色以提高可读性 */
+        border-color: #007bff; /* 如果你的按钮有边框的话 */
+    }
+
+    /* 结束页码样式 */
+</style>
+
+<body>
+
+<header>
+    <nav>
+        <ul>
+            <li><a href="/">首页</a></li>
+            <li><a href="#">关于我们</a></li>
+            <li><a href="#">服务</a></li>
+            <li><a href="#">联系方式</a></li>
+        </ul>
+    </nav>
+</header>
+{% csrf_token %}
+<div class="container">
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <ul id="column1">
+                    <h2>昨天</h2>
+                    {% for temp in data.yesterday_data %}
+                        <li class="rank"><img class="rank{{ forloop.counter }}"> <span>
+                            {{ temp.prodGroupName }}
+                            &nbsp;&nbsp;点击人数 {{ temp.prodGroupClickUv }}
+                        </span></li>
+                    {% endfor %}
+                </ul> <!-- 动态添加li元素到这里 -->
+            </div>
+            <div class="column">
+                <ul id="column2">
+                    <h2>近七天</h2>
+                    {% for temp in data.seven_days_data %}
+                        <li class="rank"><img class="rank{{ forloop.counter }}"> <span>
+                            {{ temp.prodGroupName }}
+                            &nbsp;&nbsp;点击人数 {{ temp.sum }}
+                        </span></li>
+                    {% endfor %}
+                </ul> <!-- 动态添加li元素到这里 -->
+            </div>
+            <div class="column">
+                <ul id="column3">
+                    <h2>近一个月</h2>
+                    {% for temp in data.one_month_data %}
+                        <li class="rank"><img class="rank{{ forloop.counter }}"><span>
+                            {{ temp.prodGroupName }}
+                            &nbsp;&nbsp;点击人数 {{ temp.sum }}
+                        </span></li>
+                    {% endfor %}
+                </ul> <!-- 动态添加li元素到这里 -->
+            </div>
+
+        </div>
+        <!-- 日期选择控件 -->
+        <div class="main-functions">
+            <div class="time-selector">
+                <span class="showtime">已选时间：<span id="starttime"></span><span
+                        id="endtime"></span></span>
+                <button class="time-option fixedDates" onclick="addcheck(this)" data-time="1">昨日</button>
+                <button class="time-option fixedDates" onclick="addcheck(this)" data-time="7">近7日</button>
+                <button class="time-option fixedDates" onclick="addcheck(this)" data-time="30">近30日</button>
+                <div id="select_zdy" class="date_box">
+                    <button class="time-option" onclick="addcheck(this)">自定义</button>
+                    <input type="text" id="set_zdy" class="date" placeholder="请选择日期">
+                </div>
+                <div id="select_week" class="date_box">
+                    <button class="time-option" onclick="addcheck(this)">按周</button>
+                    <input type="week" id="set_week" class="date">
+                </div>
+                <div id="select_month" class="date_box">
+                    <button class="time-option" onclick="addcheck(this)">按月</button>
+                    <input type="month" id="set_month" class="date">
+                </div>
+            </div>
+            <input type="text" id="poi_id" placeholder="在此输入并按回车提交" onkeyup="filterList()"
+                   value="{{ poi_id }}">
+            <select id="mySelect" size="5">
+                {% for item in data.arr %}
+                    <option value="{{ item.1 }}" onclick="selectOption(this)">{{ item.0 }}</option>
+                {% endfor %}
+            </select>
+            <!-- 提交与更多按钮容器 -->
+            <div class="submit-more-container">
+                <button id="defaultButton">提交</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结束日期 -->
+    <table id="myTable">
+        <thead>
+        <tr>
+            <th>图片</th>
+            <th>分类 <span class="sort-icon1" data_name="prodGroupName" onclick="sort_data(this)"></th>
+            <th>名字</th>
+            <th>商品曝光人数 <span class="sort-icon1" data_name="sum2" onclick="sort_data(this)"></span></th>
+            <th>销量 <span class="sort-icon1" data_name="orders" onclick="sort_data(this)"></span></th>
+            <th>销售额 <span class="sort-icon1" data_name="sales" onclick="sort_data(this)"></span></th>
+            <th>加购/选规格点击人数 <span class="sort-icon1" data_name="sum1" onclick="sort_data(this)"></span></th>
+            <th>加购/选规格点击率</th>
+        </tr>
+        </thead>
+        <tbody id="data-container">
+        <!-- 你可以根据需要添加更多的行 -->
+        </tbody>
+    </table>
+
+
+    <div id="pagination-container"></div>
+</div>
+</div>
+<footer>
+    <p>版权所有 &copy; 2023 示例公司</p>
+</footer>
+
+
+<script>
+    var myData = {{ data|safe }};
+    let allData = myData.product
+    let max_length = Math.ceil(allData.length / 20);
+    var staticUrl = '{% static "" %}'; // 获取静态文件的URL前缀s
+
+    $(document).ready(function () {
+
+        $('.rank').each(function (index) {
+            let rankImage = 'images/rank' + ((index % 10) + 1) + '.png'; // 构造图片路径
+            $(this).find('img').attr('src', staticUrl + rankImage); // 设置img的src属性
+        });
+
+        createPagination(1)
+        displayPage(1, allData);
+        {#allData.sort((a, b) => b['orders'] - a['orders'])#}
+
+    });
+
+
+    document.getElementById('poi_id').addEventListener('focus', function () {
+        document.getElementById('mySelect').style.display = 'block';
+    });
+    // 隐藏下拉列表
+    document.getElementById('poi_id').addEventListener('blur', function () {
+        setTimeout(function () {
+            document.getElementById('mySelect').style.display = 'none';
+        }, 3000); // 延迟隐藏，以允许鼠标移动到选项上
+    });
+
+    function sort_data(element) {
+        let temp = $(element)
+        let sortFields = temp.attr('data_name'); // 获取data_name属性的值
+
+
+        if (temp.hasClass("sort-icon1")) {
+            temp.removeClass("sort-icon1");
+            temp.addClass("sort-icon2");
+            if (sortFields === "prodGroupName") {
+                allData.sort((a, b) => a[[sortFields]].localeCompare(b[[sortFields]]));
+            } else {
+                allData.sort((a, b) => a[sortFields] - b[sortFields])
+            }
+
+        } else {
+            temp.removeClass("sort-icon2");
+            temp.addClass("sort-icon1");
+            if (sortFields === "prodGroupName") {
+                allData.sort((a, b) => b[[sortFields]].localeCompare(a[[sortFields]]));
+            } else {
+                allData.sort((a, b) => b[sortFields] - a[sortFields])
+            }
+        }
+        displayPage(1, allData);
+        createPagination(1);
+    }
+
+    function generatePageNumbers(currentPage) {
+        // 计算页码列表的起始和结束位置
+        let totalPages = max_length;
+        let start = Math.max(1, currentPage - 5); // 确保不会小于1
+        let end = Math.min(totalPages, currentPage + 5); // 确保不会超出总页数
+
+        // 如果起始位置距离1太远，则调整起始和结束位置以包含前5个页码
+        if (start > 5) {
+            end = Math.min(totalPages, start + 9); // 可能需要调整以不超过总页数
+            start = start - 5;
+        }
+
+        // 如果结束位置距离总页数太远，则调整起始和结束位置以包含后5个页码
+        if (totalPages - end > 4) {
+            start = Math.max(1, end - 9); // 可能需要调整以不小于1
+            end = end + 5;
+        }
+
+        // 生成页码数组
+        let pageNumbers = [];
+        for (let i = start; i <= end; i++) {
+            pageNumbers.push(i);
+        }
+
+        return pageNumbers;
+    }
+
+    function createPagination(currentPage) {
+        let rongqi = $("#pagination-container");
+        let totalPages = max_length;
+        let pageNumbers = generatePageNumbers(currentPage);
+
+        let paginationHtml = '';
+        if (currentPage > 1) {
+            paginationHtml += `<button class="page-button" data-page="${currentPage - 1}">上一页</button>`;
+        } else {
+            paginationHtml += `<span class="disabled-span"><button class="page-button disabled-button" data-page="${currentPage - 1}">上一页</button></span>`;
+        }
+
+        pageNumbers.forEach(function (pageNumber) {
+            if (pageNumber === currentPage) {
+                paginationHtml += `<button class="page-button current" data-page="${pageNumber}">${pageNumber}</button>`;
+            } else {
+                paginationHtml += `<button class="page-button" data-page="${pageNumber}">${pageNumber}</button>`;
+            }
+        });
+        if (currentPage < totalPages) {
+            paginationHtml += `<button class="page-button " data-page="${currentPage + 1}">下一页</button>`;
+        } else {
+            paginationHtml += `<span class="disabled-span"><button class="page-button disabled-button" data-page="${currentPage + 1}">下一页</button></span>`;
+        }
+        rongqi.html(paginationHtml);
+
+        $('.page-button').click(function () {
+            let newPage = parseInt($(this).data('page'));
+            displayPage(newPage, allData);
+            createPagination(newPage);
+            $('html, body').animate({
+                scrollTop: $('#myTable').offset().top
+            }, 500); // 500是动画持续时间，以毫秒为单位
+        })
+    }
+
+    // 为每个按钮添加点击事件监听器
+
+    function displayPage(currentPage, data) {
+        const pageSize = 20; // 假设每页显示10条数据
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const currentPageData = data.slice(startIndex, endIndex);
+
+        // 假设你有一个id为'data-container'的DOM元素用来展示数据
+        const container = document.getElementById('data-container');
+        container.innerHTML = ''; // 清空当前页的内容
+
+        // 假设有一个简单的函数来渲染数据
+        renderData(currentPageData, container);
+    }
+
+    function renderData(data, container) {
+        data.forEach(item => {
+            // 这里假设每个数据项都渲染为一个<div>元素
+            const tr = document.createElement('tr'); // 创建tr元素
+            const td0 = document.createElement('td');
+            const img = document.createElement('img'); // 创建img元素
+            img.src = item['imgurl']; // 设置img的src属性
+            img.className = 'pro_img'; // 添加类名'
+            td0.appendChild(img);
+            tr.appendChild(td0); // 将img元素添加到tr元素中
+            const td1 = document.createElement('td');
+            td1.textContent = item['prodGroupName'];
+            tr.appendChild(td1);
+            const td2 = document.createElement('td');
+            td2.textContent = item['prodName'];
+            tr.appendChild(td2);
+            const td3 = document.createElement('td');
+            td3.textContent = item['sum2'];
+            tr.appendChild(td3);
+            const td4 = document.createElement('td');
+            td4.textContent = item['orders'];
+            tr.appendChild(td4);
+            const td5 = document.createElement('td');
+            td5.textContent = item['sales'];
+            tr.appendChild(td5);
+            const td6 = document.createElement('td');
+            td6.textContent = item['sum1'];
+            tr.appendChild(td6);
+            const td7 = document.createElement('td');
+            td7.textContent = (item['sum1'] / item['sum2'] * 100).toFixed(2) + "%";
+            tr.appendChild(td7);
+
+            container.appendChild(tr); // 将tr元素添加到容器中
+        });
+    }
+
+    // 初始显示第一页
+
+
+    function filterList() {
+        var input = $('#poi_id').val().toLowerCase();
+        $('#mySelect option').each(function () {
+            var text = $(this).text().toLowerCase();
+            $(this).toggle(text.indexOf(input) > -1);
+        });
+    }
+
+    function selectOption(selectedOption) {
+        document.getElementById('poi_id').value = selectedOption.value;
+        // document.getElementById('mySelect').style.display = 'none';
+    }
+
+    function addcheck(ss) {
+        $(".time-option").removeClass('check');
+        $(ss).addClass('check');
+    }
+
+</script>
+<script src="{% static 'js/hangye/rq.js' %}"></script>
+
+</body>
+</html>

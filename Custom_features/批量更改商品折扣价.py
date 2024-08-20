@@ -179,9 +179,9 @@ def add_act(session, poi_id, actlist, url):
 def main(df, poi_id, cookie, result):
     # result = set()
     client = MongoClient('mongodb://localhost:27017/')
-    db = client['actproduct']
+    db = client[str(poi_id)]
 
-    collection_new = db[str(poi_id)]
+    collection_new = db['proact']
     query_params = {
         'source': 'pc',
         'conflictCoverType': 1,
@@ -197,24 +197,6 @@ def main(df, poi_id, cookie, result):
         'Content-Type': 'application/json',
         'Cookie': cookie,
         'Origin': 'https://e.waimai.meituan.com',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-origin',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'sec-ch-ua': '"Not?A_Brand";v="8", "Chromium";v="108"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"'
-        # ... 其他 headers 字段
-    }
-
-    headers1 = {
-        'Accept': 'application/json, text/plain, */*',
-        'Accept-Language': 'zh-CN,zh;q=0.9',
-        'Connection': 'keep-alive',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Cookie': cookie,
-        'Origin': 'https://e.waimai.meituan.com',
-        'Referer': 'https://e.waimai.meituan.com/gw/static_resource/product',
         'Sec-Fetch-Dest': 'empty',
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'same-origin',
@@ -264,7 +246,8 @@ def main(df, poi_id, cookie, result):
                 result.add(f'价格不能为负数 {name}, {spec}')
                 continue
             actlist.append(
-                set_foods(document_new['skuId'], document_new['spuId'], originPrice, price, document_new['daylimit'],
+                set_foods(document_new['skuId'], document_new['spuId'], originPrice, price, 1,
+                          # document_new['daylimit']
                           document_new['orderLimit'])
             )
         else:

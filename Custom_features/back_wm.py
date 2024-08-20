@@ -2,17 +2,18 @@ from pymongo import MongoClient
 from datetime import datetime
 
 
-
-
 def back(poi_id):
+    poi_id = str(poi_id)
     client = MongoClient('mongodb://localhost:27017/')
     back_up = client['back_up_jx']
-    test = client['test']
+    test = client[poi_id]
+    collection = test["prodata"]
+
     other = client['other']
     back_up_log = other['back_up_jxlog']
 
-    poi_id = str(poi_id)
-    collection = test[poi_id]
+
+
     documents = []
     for i in collection.find():
         documents.append(i)

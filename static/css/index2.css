@@ -1,0 +1,74 @@
+body {
+
+}
+
+#navigation {
+    display: flex;
+    flex-wrap: wrap; /* 允许子元素换行 */
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中（但在这个例子中，因为我们希望子元素在顶部开始，所以可能不需要这个属性）*/
+    gap: 10px; /* 设置子元素之间的间距 */
+    padding: 10px; /* 为容器添加一些内边距 */
+    /*margin: 10px;*/
+}
+
+#navigation .item {
+    width: calc(25% - 20px); /* 减去间隙，使每行正好4个 */
+    height: 100px; /* 设定高度，根据需求调整 */
+    background-color: #edb158; /* 背景颜色，可根据需要修改 */
+    margin-bottom: 10px; /* 为了在换行时保持垂直间距 */
+    box-sizing: border-box; /* 包括padding和border在内计算元素的总宽度和高度 */
+    display: flex; /* 如果需要，可以在子元素内也使用Flexbox */
+    /*justify-content: flex-start;*/
+    justify-content: center; /* 水平居中子元素内的内容 */;
+    align-items: center; /* 垂直居中子元素内的内容（如果需要）*/
+    color: #883030;
+    word-spacing: 4px;
+    border-radius: 30px;
+}
+
+.item img {;
+    height: 100%;
+    width: 100px;
+    margin-left: 5px;
+}
+
+.item span {
+    font-size: 20px;
+    font-weight: bold;
+    margin-left: 30px;
+}
+
+.item label {
+    font-weight: bold;
+}
+
+.item input[type="text"] {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    width: 200px;
+}
+
+.item button {
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.item button:hover {
+    background-color: #0056b3;
+}
+
+
+/* 注意：在.item中设置的width为calc(25% - 20px)，
+   这是为了考虑到gap（间隙）的存在。
+   由于我们有10px的左右间隙，每行4个元素会共享这20px的间隙，
+   所以每个元素需要减去(20px / 4) = 5px的额外空间。
+   但因为我们设置了左右各10px的间隙，所以实际上是20px。
+   这里为了简化计算，直接减去20px，确保在视觉上每行正好4个元素。
+*/
